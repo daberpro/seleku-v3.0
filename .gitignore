@@ -1,0 +1,8 @@
+node_modules
+test
+test.js
+*.selek
+result
+*txt
+app.test.js
+compiler\/seleku-core

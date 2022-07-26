@@ -1,0 +1,23 @@
+{
+  "name": "seleku-kit-3.0",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "abstract-syntax-tree": "^2.20.6",
+    "cardinal": "^2.1.1",
+    "cli-highlight": "^2.1.11",
+    "esbuild": "^0.14.49",
+    "html-prettify": "^1.0.7",
+    "js-beautify": "^1.14.3",
+    "parse5": "^7.0.0"
+  }
+}
