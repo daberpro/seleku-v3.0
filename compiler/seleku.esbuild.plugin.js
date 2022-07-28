@@ -1,10 +1,15 @@
 let path = require('path');
 const {readFileSync} = require('fs');
-const {transform} = require('./compiler.js');
-const {find,replace} = require('abstract-syntax-tree');
-const bind = require('./utilities/bind.js');
-const ref = require('./utilities/ref.js');
-const dynamicAttr = require('./utilities/dynamic-attribute.js');
+const {
+  transform,
+  updateRegisterHTMLElement,
+  bind,
+  ref,
+  dynamicAttr,
+  condition,
+  registerContentState
+} = require('./index.js');
+
 
 module.exports = {
   name: 'seleku',
@@ -38,7 +43,6 @@ module.exports = {
         
       },
       null,
-      null,
       {
         /*
           this method create to access component when compile
@@ -46,7 +50,9 @@ module.exports = {
         getComponent(component,stateIdentifier){
           bind(component,stateIdentifier);
           ref(component,stateIdentifier);
-          dynamicAttr(component);
+          dynamicAttr(component,stateIdentifier);
+          condition(component,stateIdentifier);
+          registerContentState(component,stateIdentifier);
         },
         /*
           this method create to access AST from component tree

@@ -1,16 +1,16 @@
 {
-  "name": "seleku-kit-3.0",
-  "version": "1.0.0",
+  "name": "seleku-v3.0",
+  "version": "1.0.3",
   "description": "",
-  "main": "index.js",
+  "main": "compiler/index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "daber",
+  "license": "Apache-2.0",
   "dependencies": {
     "abstract-syntax-tree": "^2.20.6",
     "cardinal": "^2.1.1",

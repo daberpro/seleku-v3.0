@@ -112,33 +112,43 @@ export class Node{
 
 		let template = '';
 
-		for(let x in attribute){
+		for (let x in attribute) {
+	      if (typeof attribute[x] === "function") {
+	        Component[x.replace(/\$\$\$\_/igm,'')] = attribute[x];
+	      } else {
+	        const _RealAttrContext = new Function("$$$___attr", "Component", `
+					const {${Object.keys(attribute).map((e) => {
+	          if (e === "class") {
+	            return "$_class";
+	          }
+	          return e;
+	        })}} = $$$___attr;
 
-		  if(typeof attribute[x] === 'function'){
-	        Component[x] = attribute[x];
-	      }else{
-	      	const _RealAttrContext = new Function('$$$___attr','Component',`
-				const {${Object.keys(attribute).map(e =>{
-					
-					if(e === 'class'){
-						return '$_class'
-					}
+	        try{
+	          if(typeof $$$_${x} !== 'function' && $$$_${x}){
 
-					return e;
-				})}} = $$$___attr;
-				try{
-					Component.setAttribute('${x}', $$$_${x});
-				}catch(e){
-					Component.setAttribute('${x}', ${x.replace(/class/igm,'$$_$&')});
-				}
-			`);
-			if(!(/\$\$\$\_/igm.test(x))) {
-				_RealAttrContext(attribute,Component);
-	      		template += `Component.setAttribute('${x}', ${attribute[x]});`
-	      	}
+	          	Component.setAttribute('${x}', $$$_${x});
+
+	          }else{
+				
+				Component.setAttribute('${x}', '${attribute[x]}');
+
+	          }
+	        }catch(e){
+	          if(typeof ${x.replace(/class/igm, "$$_$&")} !== 'function' && ${x.replace(/class/igm, "$$_$&")}){
+	          	Component.setAttribute('${x}', ${x.replace(/class/igm, "$$_$&")});
+	          }else{
+	          	Component.setAttribute('${x}', '${attribute[x]}');
+	          }
+	        }
+	        
+				`);
+	        if (!/\$\$\$\_/igm.test(x)) {
+	          _RealAttrContext(attribute, Component);
+	          template += `Component.setAttribute('${x}', ${attribute[x]});`;
+	        }
 	      }
-
-		}
+	    }
 
 
 		return {
@@ -199,7 +209,7 @@ export class Node{
 
 			if(x !== "uid" && x !== "condition" && x !== "loop" && x !== "async") Observer.subscribe(x,(object)=>{
 				
-				content.update(content.content,{...content.linked,...object});
+				content.update(content.content,{...content.linked,...object,x,object[x]});
 
 			})
 

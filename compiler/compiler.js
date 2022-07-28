@@ -4,7 +4,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 const prettify = require('html-prettify');
 const {highlight} = require('cardinal');
-const { parse: ASTParse, walk, replace, generate, find, each, traverse } = require('abstract-syntax-tree');
+const { parse: ASTParse, walk, binaryExpressionReduction, replace, generate, find, each, traverse } = require('abstract-syntax-tree');
 
 const HTMLElementTag = { "a": "a", "abbr": "abbr", "acronym": "acronym", "address": "address", "applet": "applet", "area": "area", "article": "article", "aside": "aside", "audio": "audio", "b": "b", "base": "base", "basefont": "basefont", "bdi": "bdi", "bdo": "bdo", "bgsound": "bgsound", "big": "big", "blink": "blink", "blockquote": "blockquote", "body": "body", "br": "br", "button": "button", "canvas": "canvas", "caption": "caption", "center": "center", "cite": "cite", "code": "code", "col": "col", "colgroup": "colgroup", "content": "content", "data": "data", "datalist": "datalist", "dd": "dd", "decorator": "decorator", "del": "del", "details": "details", "dfn": "dfn", "dir": "dir", "div": "div", "dl": "dl", "dt": "dt", "element": "element", "em": "em", "embed": "embed", "fieldset": "fieldset", "figcaption": "figcaption", "figure": "figure", "font": "font", "footer": "footer", "form": "form", "frame": "frame", "frameset": "frameset", "h1": "h1", "h2": "h2", "h3": "h3", "h4": "h4", "h5": "h5", "h6": "h6", "head": "head", "header": "header", "hgroup": "hgroup", "hr": "hr", "html": "html", "i": "i", "iframe": "iframe", "img": "img", "input": "input", "ins": "ins", "isindex": "isindex", "kbd": "kbd", "keygen": "keygen", "label": "label", "legend": "legend", "li": "li", "link": "link", "listing": "listing", "main": "main", "map": "map", "mark": "mark", "marquee": "marquee", "menu": "menu", "menuitem": "menuitem", "meta": "meta", "meter": "meter", "nav": "nav", "nobr": "nobr", "noframes": "noframes", "noscript": "noscript", "object": "object", "ol": "ol", "optgroup": "optgroup", "option": "option", "output": "output", "p": "p", "param": "param", "plaintext": "plaintext", "pre": "pre", "progress": "progress", "q": "q", "rp": "rp", "rt": "rt", "ruby": "ruby", "s": "s", "samp": "samp", "script": "script", "section": "section", "select": "select", "shadow": "shadow", "small": "small", "source": "source", "spacer": "spacer", "span": "span", "strike": "strike", "strong": "strong", "style": "style", "sub": "sub", "summary": "summary", "sup": "sup", "table": "table", "tbody": "tbody", "td": "td", "template": "template", "textarea": "textarea", "tfoot": "tfoot", "th": "th", "thead": "thead", "time": "time", "title": "title", "tr": "tr", "track": "track", "tt": "tt", "u": "u", "ul": "ul", "var": "var", "video": "video", "wbr": "wbr", "xmp": "xmp" }
 
@@ -99,8 +99,8 @@ function callComponent(Component, arrayResult, src, isFirstChild = false, addres
 	
 	arrayResult.push({
 		component: `
-			const ${'$$'+tagName+'_component'} = Node.Render(${attr.hasOwnProperty("async")? "await " : ""}${tagName}(${toString(cAttr)},${address}),${address});
-			${Object.keys(cAttr).filter(e => !(/(\"|\'|\`)/igm.test(cAttr[e]))).map(e => `_Observer.subscribe("${cAttr[e]}",(data)=> ${'$$'+tagName+'_component'}.update(void 0, data));`).join(' ')}
+			const ${'$$'+tagName+'_component'} = Node.Render(${attr.hasOwnProperty("async")? "await " : ""}${tagName}(${toString(cAttr)},${address? address : '$$_parent'}),${address? address : '$$_parent'});
+			${Object.keys(cAttr).filter(e => !(/(\"|\'|\`)/igm.test(cAttr[e]))).map(e => `_Observer.subscribe("${cAttr[e]}",(data)=> ${'$$'+tagName+'_component'}.update(void 0, data,"${e}",data["${cAttr[e]}"]));`).join(' ')}
 		`,
 		location: Component.sourceCodeLocation,
 		parent: address,
@@ -187,13 +187,34 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 							return e.value
 						}
 					}).join(" ").match(/\$\{.*?\}/igm)?.map((e)=>{
-						
+
 						if (/\./igm.test(e)){
 
 							return e.split('.')[0];
 
 						}else{
-							return e;
+
+							let isThereLiteral = false;
+							let isThereIdentifier = false;
+							let allIdentifier = [];
+
+							find(ASTParse(e.replace(/(\{|\}|\$)/igm,"")),{type: 'Literal'}).forEach(e =>{
+								isThereLiteral = true;
+							});
+
+							find(ASTParse(e.replace(/(\{|\}|\$)/igm,"")),{type: 'Identifier'}).forEach(e =>{
+								allIdentifier.push(e.name);
+								isThereIdentifier = true;
+							});
+
+							if(isThereLiteral && isThereIdentifier){
+								return `${TagName}_${uuidv4()}: ${e},${allIdentifier}`;
+							}else if(isThereLiteral){
+								return `${TagName}_${uuidv4()}: ${e}`;
+							}else{
+								return e;
+							}
+						
 						}
 
 					})?.join(",\n").replace(/(\{|\}|\$)/igm,"") || ''}
@@ -270,7 +291,7 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 }
 
 module.exports.updateRegisterHTMLElement = (element) =>{ HTMLElementTag[element] = element }
-module.exports.transform = function (_source, callbackComponentArrowFunction, isFirst, current, API) {
+module.exports.transform = function (_source, callbackComponentArrowFunction, isFirst, API) {
 
 	let source = _source.replace(/(\r|\t|\n|\s+)/igm," ");
 	let raw = {
@@ -289,12 +310,13 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 		const a = createHTML(x, [], source, true, "");
 		
 		//Seleku Access API to Compiler
+		// a.forEach(e => console.log(e.location))
 		if(API.getComponent) API.getComponent(a,stateIdentifier);
 
 		let loopChild = "";
 		let loopArgs = "";
 		let loopTarget = [];
-		let currentComponentParent = "";
+		leComponentParent = "";
 		let loopComponent = [];
 		let nameOfChildContent = [];
 		let loopMethod = "";
@@ -306,9 +328,9 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 				calledComponent[e.componentName] = e.props;
 
-				if(currentComponentParent !== e.parent){
+				iComponentParent !== e.parent){
 				
-					currentComponentParent = e.parent;
+			ComponentParent = e.parent;
 					loopComponent[i] = e.componentName;
 				
 				}else{
@@ -501,6 +523,7 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	}
 
 	const SelekuResult = beautify(lastResult.replace(/(\n\n)/igm, "\n"), { indent_size: 2, space_in_empty_paren: true });
+	
 	const tree = ASTParse(SelekuResult);
 
 	let selekuComponent = {};
@@ -544,13 +567,14 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
 						node.init?.body?.body.push({
 						  type: 'ReturnStatement',
-						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data){
+						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
 							  	${component_loop_child.map(d =>{
 							  		return `
+							  			
 							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')}}})`)
+							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
 						});
 
 						onceTime = true;
@@ -610,13 +634,14 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
 						node.init?.body?.body.push({
 						  type: 'ReturnStatement',
-						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data){
+						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
 							  	${component_loop_child.map(d =>{
 							  		return `
+							  			
 							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')}}})`)
+							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
 						});
 						onceTime = true;
 					}
@@ -656,13 +681,14 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
 						node.init?.body?.body.push({
 						  type: 'ReturnStatement',
-						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data){
+						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
 							  	${component_loop_child.map(d =>{
 							  		return `
+							  			
 							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')}}})`)
+							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
 						});
 
 						onceTime = true;
@@ -717,13 +743,14 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 				if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
 					node.body?.body.push({
 					  type: 'ReturnStatement',
-					  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data){
+					  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
 							  	${component_loop_child.map(d =>{
 							  		return `
+							  			
 							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')}}})`)
+							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
 					});
 					onceTime = true;
 				}
@@ -787,13 +814,14 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 						if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
 							node.init?.body?.body.push({
 							  type: 'ReturnStatement',
-							  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data){
+							  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
 							  	${component_loop_child.map(d =>{
 							  		return `
+							  			
 							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')}}})`)
+							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
 							});
 							onceTime = true;
 						}
@@ -861,7 +889,7 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 				}
 
 				find(e,{type: 'VariableDeclaration'}).forEach(e =>{
-					if(e.declarations[0].id.name in stateVariabel){
+					if(e.declarations[0].id.name in stateIdentifier){
 						state[e.declarations[0].id.name] = null;
 						if(parent.type === 'VariableDeclarator' && !(parent.id.name.match(/\$\$Template_Function/)) && !(generate(node.body.body[i]).match(/\$\$Template_Function/))){
 							node.body.body[i] = ASTParse(generate(node.body.body[i])
@@ -1286,6 +1314,6 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	// Seleku API access AST
 	if(API.AST) API.AST(tree);
 
-	return generate(tree).replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.');
+	return generate(binaryExpressionReduction(tree)).replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.');
 }
 
