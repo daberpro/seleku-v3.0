@@ -209,7 +209,7 @@ export class Node{
 
 			if(x !== "uid" && x !== "condition" && x !== "loop" && x !== "async") Observer.subscribe(x,(object)=>{
 				
-				content.update(content.content,{...content.linked,...object,x,object[x]});
+				content.update(content.content,{...content.linked,...object});
 
 			})
 

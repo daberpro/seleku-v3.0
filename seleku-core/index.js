@@ -21,8 +21,16 @@ const Watcher = (callback,watchState,_Observer) =>{
 
 const Context = (data) =>{
 
-    
-    
+    const _Observer = new Observer();
+    return [
+        (callName,handler)=>{
+            _Observer.subscribe(callName,handler);
+        },
+        (callName,value)=>{
+            _Observer.emit(callName,value);
+        }
+    ];
+
 }
 
 export {
@@ -33,4 +41,5 @@ export {
     CreateState,
     Node,
     Seleku,
+    Context
 };

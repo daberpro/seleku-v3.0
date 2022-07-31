@@ -7,11 +7,12 @@ const {
   ref,
   dynamicAttr,
   condition,
-  registerContentState
-} = require('./index.js');
+  registerContentState,
+  copase
+} = require('./compiler-core.js');
 
 
-module.exports = {
+module.exports = (Copase = {css: null,set: false})=> ({
   name: 'seleku',
   setup(build) {
     build.onResolve({ filter: /\.selek$/ }, args => {
@@ -47,12 +48,13 @@ module.exports = {
         /*
           this method create to access component when compile
         */
-        getComponent(component,stateIdentifier){
+        getComponent(component,stateIdentifier,StyleSheet){
           bind(component,stateIdentifier);
           ref(component,stateIdentifier);
           dynamicAttr(component,stateIdentifier);
           condition(component,stateIdentifier);
           registerContentState(component,stateIdentifier);
+          if(Copase.set) copase(component,stateIdentifier,StyleSheet);
         },
         /*
           this method create to access AST from component tree
@@ -65,16 +67,15 @@ module.exports = {
       });
 
       console.log(args.path);
-      
+      Copase.css = contents.CSS;
       return {
-        contents
+        contents: contents.JS
       }
     })
 
     build.onEnd(()=>{
-      console.log('compile time : ');
-      console.timeEnd();
+      console.log('compiling success');
     })
 
   },
-}
+})

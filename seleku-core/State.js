@@ -26,12 +26,12 @@ export class CreateState{
 					// attribute yang di update ada
 					main.update(prop);
 
-					return object[prop];
+					return (object[prop] ? object[prop] : true);
 				}	
 
 				// kembalikan sesuatu jika tidak ada
 				// #Error
-				return 0;
+				return true;
 			},
 			get(target,prop,receiver){
 
@@ -43,7 +43,7 @@ export class CreateState{
 
 				// kembalikan sesuatu jika tidak ada
 				// #Error
-				return 0;
+				return false;
 			}
 		}
 

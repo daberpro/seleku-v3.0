@@ -1,7 +1,6 @@
 const { parse, serialize } = require('parse5');
 const beautify = require('js-beautify').js;
 const fs = require("fs");
-const crypto = require("crypto");
 const prettify = require('html-prettify');
 const {highlight} = require('cardinal');
 const { parse: ASTParse, walk, binaryExpressionReduction, replace, generate, find, each, traverse } = require('abstract-syntax-tree');
@@ -293,7 +292,6 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 module.exports.updateRegisterHTMLElement = (element) =>{ HTMLElementTag[element] = element }
 module.exports.transform = function (_source, callbackComponentArrowFunction, isFirst, API) {
 
-	const StyleSheet = [];
 	let source = _source.replace(/(\r|\t|\n|\s+)/igm," ");
 	let raw = {
 		source
@@ -312,7 +310,7 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 		
 		//Seleku Access API to Compiler
 		// a.forEach(e => console.log(e.location))
-		if(API.getComponent) API.getComponent(a,stateIdentifier,StyleSheet);
+		if(API.getComponent) API.getComponent(a,stateIdentifier);
 
 		let loopChild = "";
 		let loopArgs = "";
@@ -1315,9 +1313,6 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	// Seleku API access AST
 	if(API.AST) API.AST(tree);
 
-	return {
-		JS: generate(binaryExpressionReduction(tree)).replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.'),
-		CSS: StyleSheet.join(' ')
-	}
+	return generate(binaryExpressionReduction(tree)).replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.');
 }
 

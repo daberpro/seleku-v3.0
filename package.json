@@ -1,7 +1,7 @@
 {
   "name": "seleku-v3.0",
-  "version": "1.0.3",
-  "description": "",
+  "version": "1.0.3-1",
+  "description": "\"a light weight frontend framework made by indonesia people\"",
   "main": "compiler/index.js",
   "directories": {
     "test": "test"
@@ -12,6 +12,7 @@
   "author": "daber",
   "license": "Apache-2.0",
   "dependencies": {
+    "@chialab/esbuild-plugin-html": "^0.16.3",
     "abstract-syntax-tree": "^2.20.6",
     "cardinal": "^2.1.1",
     "cli-highlight": "^2.1.11",
@@ -19,5 +20,21 @@
     "html-prettify": "^1.0.7",
     "js-beautify": "^1.14.3",
     "parse5": "^7.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daberpro/seleku-v3.0.git"
+  },
+  "keywords": [
+    "\"seleku",
+    "seleku-kit",
+    "daberdev",
+    "frontend",
+    "webdev",
+    "web\""
+  ],
+  "bugs": {
+    "url": "https://github.com/daberpro/seleku-v3.0/issues"
+  },
+  "homepage": "https://github.com/daberpro/seleku-v3.0#readme"
 }

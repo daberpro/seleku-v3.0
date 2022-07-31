@@ -1,6 +1,13 @@
 const {parse, walk, find, generate} = require('abstract-syntax-tree');
+const { transpile } = require('../../copase/compiler.js');
 
-module.exports = (component)=>{
+const classRegister = {};
+classRegister['mediaQuery'] = {
+	'sm': {},
+	'md': {},
+	'lg': {}
+};
+module.exports = (component,stateIdentifier,StyleSheet)=>{
 
 	component.forEach((e,i)=>{
 
@@ -17,21 +24,12 @@ module.exports = (component)=>{
 
 						find(node,{type: 'ObjectExpression'}).forEach(e=>{
 							e.properties.forEach((r)=>{
-								if(r.value.type === 'Identifier'){
-									stateAttr[node.declarations[0].id.name] = r.value.name;
-									e.properties.push(parse(`({'$$$_${r.key.value}': ${r.value.name}})`).body[0].expression.properties[0]);
-									e.properties.push({
-									  type: 'Property',
-									  key: { type: 'Literal', value: r.value.name },
-									  value: { type: 'Identifier', name: r.value.name },
-									  kind: 'init',
-									  computed: false,
-									  method: false,
-									  shorthand: false
-									});
-									r.value = {
-										type: 'Literal',
-										value: r.value.name
+								if(r.value.type === 'Literal' && typeof r.value.value === 'string'){
+									if(r.key.value === 'class'){
+									
+										const css = transpile(r.value.value,classRegister)											
+										r.value.value = css.className;
+
 									}
 								}
 							});
@@ -47,5 +45,9 @@ module.exports = (component)=>{
 		}
 
 	});
+	
+	for(let x in classRegister){
+		StyleSheet.push(classRegister[x].component);
+	}
 
 }
