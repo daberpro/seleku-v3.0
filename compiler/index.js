@@ -37,14 +37,14 @@ const Bundle = async (customConfig = {},additional= {})=>{
       '.jpg': 'file'
     },
     minify: true,
-    write: true,
+    write: true
   }
 
   Object.assign(config,customConfig);
 
   require('esbuild').build(config)
   .then((e)=>{
-    writeFileSync(config.outdir+'/style.css',cssBeautify(copase.css.replace(/(\n|\t|\r|\s+)/igm,''),{indent_size: 2}));
+    writeFileSync(config.outdir+'/style.css',cssBeautify(copase.css.replace(/(\n|\t|\r|\s+)/igm,' '),{indent_size: 2}));
   })
   .catch(() => process.exit(1));
 }

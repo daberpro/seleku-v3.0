@@ -23,7 +23,7 @@ const transpile = (source, classRegister) =>{
 
 		if(/(^sm\:|^md\:|^lg\:)/igm.test(e)){
 			
-			const type = (e.match(/(^sm\:|^md\:|^lg\:)/igm) || [])[0].replace(/(\:)/igm,'');
+			const type = (e.match(/(^sm\:|^md\:|^lg\:)/igm) || [''])[0].replace(/(\:)/igm,'');
 			if(!(className in classRegister['mediaQuery'][type])) classRegister['mediaQuery'][type] = {
 				...classRegister['mediaQuery'][type],
 				[className]: {
@@ -34,7 +34,7 @@ const transpile = (source, classRegister) =>{
 						.replace(/^md\:/igm,'')
 						.replace(/^lg\:/igm,'')
 					} : ${
-						(e.match(/\[.*?\]/igm) || [])[0]
+						(e.match(/\[.*?\]/igm) || [''])[0]
 						.replace(/(\[|\])/igm,'')
 					};`] : null
 				}
@@ -48,7 +48,7 @@ const transpile = (source, classRegister) =>{
 					.replace(/^md\:/igm,'')
 					.replace(/^lg\:/igm,'')
 				} : ${
-					(e.match(/\[.*?\]/igm) || [])[0]
+					(e.match(/\[.*?\]/igm) || [''])[0]
 					.replace(/(\[|\])/igm,'')
 				};`] : null
 			}
@@ -68,7 +68,7 @@ const transpile = (source, classRegister) =>{
 						.replace(/^md\:/igm,'')
 						.replace(/^lg\:/igm,'')
 					} : ${
-						(e.match(/\[.*?\]/igm) || [])[0]
+						(e.match(/\[.*?\]/igm) || [''])[0]
 						.replace(/(\[|\])/igm,'')
 					};`] : null
 				},
@@ -81,7 +81,7 @@ const transpile = (source, classRegister) =>{
 
 			if( /(^\w.*?\:)/igm.test(e) && !/(^sm\:|^md\:|^lg\:)/igm.test(e)) {
 				
-				const type = (e.match(/(^\w.*?\:)/igm) || [])[0].replace(/(\:)/igm,'');
+				const type = (e.match(/(^\w.*?\:)/igm) || [''])[0].replace(/(\:)/igm,'');
 				if(!(type in classRegister[source]['psuedo'])) classRegister[source]['psuedo'] = {
 					[type]: {
 						[`${
@@ -92,7 +92,7 @@ const transpile = (source, classRegister) =>{
 							.replace(/^lg\:/igm,'')
 							.replace(/^\w.*?\:/igm,'')
 						} : ${
-							(e.match(/\[.*?\]/igm) || [])[0]
+							(e.match(/\[.*?\]/igm) || [''])[0]
 							.replace(/(\[|\])/igm,'')
 						};`] : null			
 					}
@@ -107,13 +107,13 @@ const transpile = (source, classRegister) =>{
 				.replace(/^md\:/igm,'')
 				.replace(/^lg\:/igm,'')
 			} : ${
-				(e.match(/\[.*?\]/igm) || [])[0]
+				(e.match(/\[.*?\]/igm) || [''])[0]
 				.replace(/(\[|\])/igm,'')
 			};`] = null;
 
 			if( /(^\w.*?\:)/igm.test(e) && !/(^sm\:|^md\:|^lg\:)/igm.test(e)) {
 				
-				const type = (e.match(/(^\w.*?\:)/igm) || [])[0].replace(/(\:)/igm,'');
+				const type = (e.match(/(^\w.*?\:)/igm) || [''])[0].replace(/(\:)/igm,'');
 
 				if(!(type in classRegister[source]['psuedo'])) classRegister[source]['psuedo'][type] = {
 					...classRegister[source]['psuedo'][type],
@@ -125,7 +125,7 @@ const transpile = (source, classRegister) =>{
 						.replace(/^lg\:/igm,'')
 						.replace(/^\w.*?\:/igm,'')
 					} : ${
-						(e.match(/\[.*?\]/igm) || [])[0]
+						(e.match(/\[.*?\]/igm) || [''])[0]
 						.replace(/(\[|\])/igm,'')
 					};`] : null			
 				}
@@ -133,7 +133,7 @@ const transpile = (source, classRegister) =>{
 
 			if( /(^\w.*?\:)/igm.test(e) && !/(^sm\:|^md\:|^lg\:)/igm.test(e)) {
 				
-				const type = (e.match(/(^\w.*?\:)/igm) || [])[0].replace(/(\:)/igm,'');
+				const type = (e.match(/(^\w.*?\:)/igm) || [''])[0].replace(/(\:)/igm,'');
 
 				if((type in classRegister[source]['psuedo'])) classRegister[source]['psuedo'][type] = {
 					...classRegister[source]['psuedo'][type],
@@ -145,7 +145,7 @@ const transpile = (source, classRegister) =>{
 						.replace(/^lg\:/igm,'')
 						.replace(/^\w.*?\:/igm,'')
 					} : ${
-						(e.match(/\[.*?\]/igm) || [])[0]
+						(e.match(/\[.*?\]/igm) || [''])[0]
 						.replace(/(\[|\])/igm,'')
 					};`] : null
 				}

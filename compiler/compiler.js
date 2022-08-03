@@ -2,8 +2,9 @@ const { parse, serialize } = require('parse5');
 const beautify = require('js-beautify').js;
 const fs = require("fs");
 const crypto = require("crypto");
-const prettify = require('html-prettify');
 const {highlight} = require('cardinal');
+const CLIHiglight = require('cli-highlight').highlight
+const beautify_html = require('js-beautify').html;
 const { parse: ASTParse, walk, binaryExpressionReduction, replace, generate, find, each, traverse } = require('abstract-syntax-tree');
 
 const HTMLElementTag = { "a": "a", "abbr": "abbr", "acronym": "acronym", "address": "address", "applet": "applet", "area": "area", "article": "article", "aside": "aside", "audio": "audio", "b": "b", "base": "base", "basefont": "basefont", "bdi": "bdi", "bdo": "bdo", "bgsound": "bgsound", "big": "big", "blink": "blink", "blockquote": "blockquote", "body": "body", "br": "br", "button": "button", "canvas": "canvas", "caption": "caption", "center": "center", "cite": "cite", "code": "code", "col": "col", "colgroup": "colgroup", "content": "content", "data": "data", "datalist": "datalist", "dd": "dd", "decorator": "decorator", "del": "del", "details": "details", "dfn": "dfn", "dir": "dir", "div": "div", "dl": "dl", "dt": "dt", "element": "element", "em": "em", "embed": "embed", "fieldset": "fieldset", "figcaption": "figcaption", "figure": "figure", "font": "font", "footer": "footer", "form": "form", "frame": "frame", "frameset": "frameset", "h1": "h1", "h2": "h2", "h3": "h3", "h4": "h4", "h5": "h5", "h6": "h6", "head": "head", "header": "header", "hgroup": "hgroup", "hr": "hr", "html": "html", "i": "i", "iframe": "iframe", "img": "img", "input": "input", "ins": "ins", "isindex": "isindex", "kbd": "kbd", "keygen": "keygen", "label": "label", "legend": "legend", "li": "li", "link": "link", "listing": "listing", "main": "main", "map": "map", "mark": "mark", "marquee": "marquee", "menu": "menu", "menuitem": "menuitem", "meta": "meta", "meter": "meter", "nav": "nav", "nobr": "nobr", "noframes": "noframes", "noscript": "noscript", "object": "object", "ol": "ol", "optgroup": "optgroup", "option": "option", "output": "output", "p": "p", "param": "param", "plaintext": "plaintext", "pre": "pre", "progress": "progress", "q": "q", "rp": "rp", "rt": "rt", "ruby": "ruby", "s": "s", "samp": "samp", "script": "script", "section": "section", "select": "select", "shadow": "shadow", "small": "small", "source": "source", "spacer": "spacer", "span": "span", "strike": "strike", "strong": "strong", "style": "style", "sub": "sub", "summary": "summary", "sup": "sup", "table": "table", "tbody": "tbody", "td": "td", "template": "template", "textarea": "textarea", "tfoot": "tfoot", "th": "th", "thead": "thead", "time": "time", "title": "title", "tr": "tr", "track": "track", "tt": "tt", "u": "u", "ul": "ul", "var": "var", "video": "video", "wbr": "wbr", "xmp": "xmp" }
@@ -278,6 +279,7 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 		}).join(" "),
 		componentFunctionName,
 		cAttr,
+		parseAttr: Component.attrs,
 		rawSyntax: src.substring(Component.sourceCodeLocation.startCol - 1, Component.sourceCodeLocation.endCol - 1),
 	});
 
@@ -296,22 +298,61 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	const StyleSheet = [];
 	let source = _source.replace(/(\r|\t|\n|\s+)/igm," ");
 	let raw = {
-		source
+		source,
+		mappingSource : _source
 	}
 
 	// raw data
 	let data = parse(source, {
 		sourceCodeLocationInfo: true
 	}).childNodes[0].childNodes[1].childNodes.filter(e => e.nodeName !== "#text");
-
 	let result = [];
+
+	// mapping data
+	const mappingIndexData = [];
+	let mappingData = parse(_source, {
+		sourceCodeLocationInfo: true
+	}).childNodes[0].childNodes[1].childNodes.filter(e => e.nodeName !== "#text");
+	let mappingIndex = 0;
+	for(let map of mappingData){
+		try{
+			mappingIndexData[mappingIndex] = {
+				source: serialize(map),
+				location: {
+					start: {
+						startline: map.sourceCodeLocation.startTag.startLine,
+						startcol: map.sourceCodeLocation.startTag.startCol,
+						endline: map.sourceCodeLocation.startTag.endLine,
+						endcol: map.sourceCodeLocation.startTag.endCol,
+					},
+					end: {
+						startline: map.sourceCodeLocation.endTag.startLine,
+						startcol: map.sourceCodeLocation.endTag.startCol,
+						endline: map.sourceCodeLocation.endTag.endLine,
+						endcol: map.sourceCodeLocation.endTag.endCol,
+					}
+				}
+			}
+		}catch(err){
+			console.log(`\n\nFatal \nError at : \n${
+				beautify_html(CLIHiglight(serialize(map),{
+					language: 'jsx'
+				}))
+			}\n\n`);
+		}
+		mappingIndex++;
+	}
 
 	for (let x of data) {
 
-		const a = createHTML(x, [], source, true, "");
-		
+		let a = {};
+		try{
+			a = createHTML(x, [], source, true, "");
+		}catch(err){
+			// #Error
+
+		}
 		//Seleku Access API to Compiler
-		// a.forEach(e => console.log(e.location))
 		if(API.getComponent) API.getComponent(a,stateIdentifier,StyleSheet);
 
 		let loopChild = "";
@@ -460,8 +501,54 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					update(props){
 						const {data, index} = props;
 						if(ArrayOfComponent_${e.componentName}.length > 0) ArrayOfComponent_${e.componentName}[index].update({${e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}: data[index]});
+					},
+					remove(props){
+						const {index,data} = props;
+						if(ArrayOfComponent_${e.componentName}.length > 0){
+							ArrayOfComponent_${e.componentName}[index].destroy(props);
+							delete ArrayOfComponent_${e.componentName}[index];
+							delete ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}[index];
+						}
 					}
 				}
+
+				_Observer.subscribe('${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}',()=>{
+
+					if(ArrayOfComponent_${e.componentName}.length > 0){
+						for(let x in ArrayOfComponent_${e.componentName}){
+							if('destroy' in ArrayOfComponent_${e.componentName}[x]) ArrayOfComponent_${e.componentName}[x].destroy();
+							delete ArrayOfComponent_${e.componentName}[x];
+						}
+					}
+
+					for(let $$LoopData in $$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}){
+						if(Number.isInteger(parseInt($$LoopData))){
+							${loopComponent.map((de)=> `ArrayOfComponent_${de}.push($$Template_Function_${de}({
+								target: null,
+							    data: $$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")},
+							    index: parseInt($$LoopData),
+							},Node));`).join(" ")}
+						}
+					}
+
+					$$_SELEKU_PREPROCESS_$$.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")} = ArrayWatcher($$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")},{
+					watch(target,from,object,property){
+
+							if(from === "set"){
+
+								${loopTarget.map((e,i)=>{
+									return `
+										_Observer.emit("${e}_"+target,{data: object, index: property, target});
+									`
+								}).join('\n')}
+
+							}
+
+							return 1;
+						}
+					});
+
+				});
 				
 				for(let x in loopHandler_${e.componentName}){
 				
@@ -480,8 +567,8 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 		result.push({
 			component: rawComponentString.join(" ")+loopMethod,
-			start: a[0].location.sourceCodeLocation.startCol,
-			end: a[0].location.sourceCodeLocation.endCol,
+			start: a[0].location?.sourceCodeLocation?.startCol,
+			end: a[0].location?.sourceCodeLocation?.endCol,
 			uid: uuidv4()
 		});
 
@@ -525,7 +612,17 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 	const SelekuResult = beautify(lastResult.replace(/(\n\n)/igm, "\n"), { indent_size: 2, space_in_empty_paren: true });
 	
-	const tree = ASTParse(SelekuResult);
+	let tree = ASTParse('//nothing here');
+	
+	try{
+		tree = ASTParse(SelekuResult);
+	}catch(err){
+		//#Error
+
+		// console.log(SelekuResult.split('\n')[err.line].substring(err.col));
+
+	}
+
 
 	let selekuComponent = {};
 	walk(tree,(node,parent)=>{
@@ -1316,7 +1413,9 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	if(API.AST) API.AST(tree);
 
 	return {
-		JS: generate(binaryExpressionReduction(tree)).replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.'),
+		JS: generate(binaryExpressionReduction(tree))
+		.replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.')
+		.replace(/\$\$\_SELEKU_PREPROCESS_\$\$\./igm,''),
 		CSS: StyleSheet.join(' ')
 	}
 }

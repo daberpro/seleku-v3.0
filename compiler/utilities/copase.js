@@ -45,9 +45,38 @@ module.exports = (component,stateIdentifier,StyleSheet)=>{
 		}
 
 	});
+
+	let mediaQ = '';
+	const mediaSize = {
+		sm: {
+			min: 0,
+			max: 400
+		},
+		md: {
+			min: 400,
+			max: 800
+		},
+		lg: {
+			min: 800,
+			max: 2000
+		}
+	}
+
+	for(let x in classRegister['mediaQuery']){
+
+		mediaQ += `@media screen and (min-width: ${mediaSize[x].min}px) and (max-width:${mediaSize[x].max}px){
+			${Object.keys(classRegister['mediaQuery'][x]).map(e => `
+				.${e}{
+					${Object.keys(classRegister['mediaQuery'][x][e]).join('\n')}
+				}
+			`)}
+		}`;
+	}
 	
 	for(let x in classRegister){
 		StyleSheet.push(classRegister[x].component);
 	}
+
+	StyleSheet.push(mediaQ);
 
 }

@@ -8,7 +8,8 @@ const {
   dynamicAttr,
   condition,
   registerContentState,
-  copase
+  copase,
+  HTMLError
 } = require('./compiler-core.js');
 
 
@@ -49,6 +50,7 @@ module.exports = (Copase = {css: null,set: false})=> ({
           this method create to access component when compile
         */
         getComponent(component,stateIdentifier,StyleSheet){
+          HTMLError(component);
           bind(component,stateIdentifier);
           ref(component,stateIdentifier);
           dynamicAttr(component,stateIdentifier);

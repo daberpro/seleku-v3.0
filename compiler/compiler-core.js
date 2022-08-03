@@ -5,6 +5,7 @@ const dynamicAttr = require('./utilities/dynamic-attribute.js');
 const condition = require('./utilities/condition.js');
 const copase = require('./utilities/copase.js');
 const registerContentState = require('./utilities/registerContentState.js');
+const HTMLError = require('./utilities/errorHandlingForHTML.js');
 
 module.exports = {
 	transform,
@@ -14,5 +15,6 @@ module.exports = {
 	dynamicAttr,
 	condition,
 	copase,
-	registerContentState
+	registerContentState,
+	HTMLError
 }

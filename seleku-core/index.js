@@ -11,6 +11,12 @@ Array.prototype.update = function(index,value){
     return index;
 }
 
+Array.prototype.remove = function(index,value){
+    this[index] = value;
+    return index;
+}
+
+
 const Watcher = (callback,watchState,_Observer) =>{
     
     for(let state of watchState){
