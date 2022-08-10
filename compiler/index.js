@@ -1,20 +1,15 @@
-const {transform: tf} = require("./compiler.js");
 const {readFileSync,writeFileSync} = require("fs");
 const cssBeautify = require('js-beautify').css;
 const esbuildSelekuPlugin = require('./seleku.esbuild.plugin.js');
 
-const Bundle = async (customConfig = {},additional= {})=>{
+const Bundle = async (customConfig = {})=>{
 
   const htmlPlugin = (await import('@chialab/esbuild-plugin-html')).default;
-  const copase = {
-    css: '',
-    set: additional.copase || false
-  }
 
   if(customConfig.hasOwnProperty('plugins')){
     customConfig.plugins = [
       ...customConfig.plugins,
-      esbuildSelekuPlugin(copase),
+      esbuildSelekuPlugin(),
       htmlPlugin()
     ]
   }
@@ -25,7 +20,7 @@ const Bundle = async (customConfig = {},additional= {})=>{
     entryNames: '[name]',
     bundle: true,
     outdir: 'result',
-    plugins: [esbuildSelekuPlugin(copase),htmlPlugin()],
+    plugins: [esbuildSelekuPlugin(),htmlPlugin()],
     format: 'esm',
     splitting: true,
     chunkNames: 'chunks/[name]-seleku',
@@ -36,17 +31,18 @@ const Bundle = async (customConfig = {},additional= {})=>{
       '.jpeg': 'file',
       '.jpg': 'file'
     },
-    minify: true,
-    write: true
+    minify: true
   }
 
   Object.assign(config,customConfig);
 
   require('esbuild').build(config)
-  .then((e)=>{
-    writeFileSync(config.outdir+'/style.css',cssBeautify(copase.css.replace(/(\n|\t|\r|\s+)/igm,' '),{indent_size: 2}));
-  })
   .catch(() => process.exit(1));
 }
+
+Bundle({
+  entryPoints: ['index.html'],
+  minify: false
+});
 
 module.exports.Bundle = Bundle;

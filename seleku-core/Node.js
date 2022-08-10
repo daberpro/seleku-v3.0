@@ -112,57 +112,29 @@ export class Node{
 
 		let template = '';
 
-		for (let x in attribute) {
-	      if (typeof attribute[x] === "function") {
-	        Component[x.replace(/\$\$\$\_/igm,'')] = attribute[x];
-	      } else {
-	        const _RealAttrContext = new Function("$$$___attr", "Component", `
-					const {${Object.keys(attribute).map((e) => {
-	          if (e === "class") {
-	            return "$_class";
-	          }
-	          return e;
-	        })}} = $$$___attr;
+		for(let x in attribute){
 
-	        try{
-	          if(typeof $$$_${x} !== 'function' && $$$_${x}){
+			const attr = attribute[x];
 
-	          	Component.setAttribute('${x}', $$$_${x});
+			if(typeof attr['real'] === 'function'){
+				Component[x] = attr['real'];
 
-	          }else{
-				
-				Component.setAttribute('${x}', '${attribute[x]}');
+			}else{
+				Component.setAttribute(x,attr['real']);
+				template += `Component.setAttribute('${x}',${attr['raw']});`;
+			}
 
-	          }
-	        }catch(e){
-	          if(typeof ${x.replace(/class/igm, "$$_$&")} !== 'function' && ${x.replace(/class/igm, "$$_$&")}){
-	          	Component.setAttribute('${x}', ${x.replace(/class/igm, "$$_$&")});
-	          }else{
-	          	Component.setAttribute('${x}', '${attribute[x]}');
-	          }
-	        }
-	        
-				`);
-	        if (!/\$\$\$\_/igm.test(x)) {
-	          _RealAttrContext(attribute, Component);
-	          template += `Component.setAttribute('${x}', ${attribute[x]});`;
-	        }
-	      }
-	    }
-
+		}
 
 		return {
 			update(data){
-				const _RealAttrContext = new Function('$$$___attr','Component',`
-					const {${Object.keys({...attribute,...data}).map(e =>{
-					
-						if(e === 'class'){
-							return '$_class'
-						}
+				const _RealAttrContext = new Function('$attribute','Component',`
+					const {
+						${Object.keys(data)}
+					} = $attribute;
 
-						return e;
-					})}} = $$$___attr;
 					${template}
+
 				`);
 				_RealAttrContext(data,Component);
 			}

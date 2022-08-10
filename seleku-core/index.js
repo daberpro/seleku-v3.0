@@ -39,6 +39,71 @@ const Context = (data) =>{
 
 }
 
+const registerLoopTarget = (state,target,array,loopSpace,_Observer)=>{
+    _Observer.subscribe('_SELEKU_LOOP_SPACE_'+array,(newArray)=>{
+        state[array] = ArrayWatcher(newArray, {
+          "watch": function(_target, from, object, property) {
+            if(from === 'get'){
+                if(object[_target] instanceof Object && !(object[_target] instanceof Array)){
+                  object[_target] = reactiveObject(object[_target],{
+                    set(object,target,value){
+                      object[target] = value;
+                      state[array].update(_target,value);
+                    }
+                  });
+                }
+              }
+            if (from === "set") {
+              _Observer.emit(`${target}_` + _target, {
+                "data": object,
+                "index": property,
+                "target": _target
+              });
+            }
+            return 1;
+          }
+        });
+    })
+
+    loopSpace[array] = (newArray)=>{
+        _Observer.emit('_SELEKU_LOOP_SPACE_'+array,newArray);
+    }
+}
+
+const reactiveObject = (object, handler) => {
+if(object instanceof Array){
+    return ArrayWatcher(object, {
+        "watch": function(target, from, object, property) {
+          if (from === "get") {
+            if (object[_target] instanceof Object && !(object[_target] instanceof Array)) {
+              object[_target] = reactiveObject(object[_target], {
+                set(object2, target2, value) {
+                  object2[target2] = value;
+                  state[array].update(_target, value);
+                }
+              });
+            }
+          }
+          if (from === "set") {
+            handler.set();
+          }
+          return 1;
+        }
+      });
+    }else if(object instanceof Object){
+      return new Proxy(object, {
+        set: handler.set,
+        get(object2, target) {
+          if (target in object2 && object2[target] instanceof Object) {
+            return reactiveObject(object2[target], this);
+          }
+          return object2[target];
+        }
+      });
+    }
+};
+
+
 export {
     Watcher, 
     ArrayWatcher, 
@@ -47,5 +112,7 @@ export {
     CreateState,
     Node,
     Seleku,
-    Context
+    Context,
+    registerLoopTarget,
+    reactiveObject
 };

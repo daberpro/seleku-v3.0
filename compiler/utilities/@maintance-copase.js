@@ -1,3 +1,8 @@
+/**
+ * copase has been maintenance
+ * and will update soon
+ * */
+
 const {parse, walk, find, generate} = require('abstract-syntax-tree');
 const { transpile } = require('../../copase/compiler.js');
 

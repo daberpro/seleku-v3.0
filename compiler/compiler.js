@@ -2,7 +2,7 @@ const { parse, serialize } = require('parse5');
 const beautify = require('js-beautify').js;
 const fs = require("fs");
 const crypto = require("crypto");
-const {highlight} = require('cardinal');
+const { highlight } = require('cardinal');
 const CLIHiglight = require('cli-highlight').highlight
 const beautify_html = require('js-beautify').html;
 const { parse: ASTParse, walk, binaryExpressionReduction, replace, generate, find, each, traverse } = require('abstract-syntax-tree');
@@ -86,28 +86,28 @@ function callComponent(Component, arrayResult, src, isFirstChild = false, addres
 	}
 
 	let cAttr = {};
-	
+
 	for (let x of rawAttrs) {
 
-		if(!x.hasOwnProperty("condition") &&
-		!x.hasOwnProperty("async") &&
-		!x.hasOwnProperty("loop") && 
-		!x.hasOwnProperty("") ) Object.assign(cAttr, x);
+		if (!x.hasOwnProperty("condition") &&
+			!x.hasOwnProperty("async") &&
+			!x.hasOwnProperty("loop") &&
+			!x.hasOwnProperty("")) Object.assign(cAttr, x);
 
 	}
 
 	const tagName = src.substring(Component.sourceCodeLocation.startCol, Component.sourceCodeLocation.startCol + Component.tagName.length);
-	
+
 	arrayResult.push({
 		component: `
-			const ${'$$'+tagName+'_component'} = Node.Render(${attr.hasOwnProperty("async")? "await " : ""}${tagName}(${toString(cAttr)},${address? address : '$$_parent'}),${address? address : '$$_parent'});
-			${Object.keys(cAttr).filter(e => !(/(\"|\'|\`)/igm.test(cAttr[e]))).map(e => `_Observer.subscribe("${cAttr[e]}",(data)=> ${'$$'+tagName+'_component'}.update(void 0, data,"${e}",data["${cAttr[e]}"]));`).join(' ')}
+			const ${'$$' + tagName + '_component'} = Node.Render(${attr.hasOwnProperty("async") ? "await " : ""}${tagName}(${toString(cAttr)},${address ? address : '$$_parent'}),${address ? address : '$$_parent'});
+			${Object.keys(cAttr).filter(e => !(/(\"|\'|\`)/igm.test(cAttr[e]))).map(e => `_Observer.subscribe("${cAttr[e]}",(data)=> ${'$$' + tagName + '_component'}.update(void 0, data,"${e}",data["${cAttr[e]}"]));`).join(' ')}
 		`,
 		location: Component.sourceCodeLocation,
 		parent: address,
 		parentAttr,
 		rootAttr,
-		componentName: '$$'+tagName+'_component',
+		componentName: '$$' + tagName + '_component',
 		props: cAttr,
 	});
 
@@ -115,7 +115,7 @@ function callComponent(Component, arrayResult, src, isFirstChild = false, addres
 
 }
 
-function createHTML(Component, arrayResult, src, isFirstChild = false, address,parentAttr,rootAttr) {
+function createHTML(Component, arrayResult, src, isFirstChild = false, address, parentAttr, rootAttr) {
 
 	countIndex++;
 
@@ -123,7 +123,7 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 		[e.split("=")[0]]: (e.split("=")[1]) ? e.split("=")[1].replace(/(^\{|\}$)/igm, "") : null
 	})) || [];
 
-	let attr = {}; 
+	let attr = {};
 
 	for (let x of rawAttrs) {
 
@@ -132,41 +132,41 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 	}
 
 	let cAttr = {};
-	
+
 	for (let x of rawAttrs) {
 
-		if(!x.hasOwnProperty("condition") &&
-		!x.hasOwnProperty("async") &&
-		!x.hasOwnProperty("loop") && 
-		!x.hasOwnProperty("") ) Object.assign(cAttr, x);
+		if (!x.hasOwnProperty("condition") &&
+			!x.hasOwnProperty("async") &&
+			!x.hasOwnProperty("loop") &&
+			!x.hasOwnProperty("")) Object.assign(cAttr, x);
 
 	}
 
 	const tagName = src.substring(Component.sourceCodeLocation.startCol, Component.sourceCodeLocation.startCol + Component.tagName.length);
 
-	if(!(tagName in HTMLElementTag)){
+	if (!(tagName in HTMLElementTag)) {
 
 		componentFunctionName[tagName] = null;
-		return callComponent(Component, arrayResult, src, false, address,parentAttr,rootAttr);
+		return callComponent(Component, arrayResult, src, false, address, parentAttr, rootAttr);
 
 	}
 
 	const TagName = tagName + countIndex;
 
-	Component.childNodes.map(e =>{
-		if(e.nodeName === "#text"){
+	Component.childNodes.map(e => {
+		if (e.nodeName === "#text") {
 			return e.value
 		}
-	}).join(" ").match(/\$\{.*?\}/igm)?.forEach((e)=>{
+	}).join(" ").match(/\$\{.*?\}/igm)?.forEach((e) => {
 
 		stateVariabel = {
 			...stateVariabel,
-			[e.split('.')[0].replace(/(\{|\}|\$)/igm,"")]: null,
+			[e.split('.')[0].replace(/(\{|\}|\$)/igm, "")]: null,
 		};
 
 		stateIdentifier = {
 			...stateIdentifier,
-			[e.split('.')[0].replace(/(\{|\}|\$)/igm,"")]: null,
+			[e.split('.')[0].replace(/(\{|\}|\$)/igm, "")]: null,
 		}
 
 	})
@@ -177,79 +177,78 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 			const ${TagName}_attribute = Seleku.createAttribute(${TagName},${toString(cAttr)});
 			const ${TagName}_content = Seleku.createContent(
 				${TagName},
-				"${Component.childNodes.map(e =>{
-					if(e.nodeName === "#text"){
-						return e.value
-					}
-				}).join(" ").replace(/\s+/igm,' ')}",
+				"${Component.childNodes.map(e => {
+			if (e.nodeName === "#text") {
+				return e.value
+			}
+		}).join(" ").replace(/\s+/igm, ' ')}",
 				{
-					${Component.childNodes.map(e =>{
-						if(e.nodeName === "#text"){
-							return e.value
-						}
-					}).join(" ").match(/\$\{.*?\}/igm)?.map((e)=>{
+					${Component.childNodes.map(e => {
+			if (e.nodeName === "#text") {
+				return e.value
+			}
+		}).join(" ").match(/\$\{.*?\}/igm)?.map((e) => {
 
-						if (/\./igm.test(e)){
+			if (/\./igm.test(e)) {
 
-							return e.split('.')[0];
+				return e.split('.')[0];
 
-						}else{
+			} else {
 
-							let isThereLiteral = false;
-							let isThereIdentifier = false;
-							let allIdentifier = [];
+				let isThereLiteral = false;
+				let isThereIdentifier = false;
+				let allIdentifier = [];
 
-							find(ASTParse(e.replace(/(\{|\}|\$)/igm,"")),{type: 'Literal'}).forEach(e =>{
-								isThereLiteral = true;
-							});
+				find(ASTParse(e.replace(/(\{|\}|\$)/igm, "")), { type: 'Literal' }).forEach(e => {
+					isThereLiteral = true;
+				});
 
-							find(ASTParse(e.replace(/(\{|\}|\$)/igm,"")),{type: 'Identifier'}).forEach(e =>{
-								allIdentifier.push(e.name);
-								isThereIdentifier = true;
-							});
+				find(ASTParse(e.replace(/(\{|\}|\$)/igm, "")), { type: 'Identifier' }).forEach(e => {
+					allIdentifier.push(e.name);
+					isThereIdentifier = true;
+				});
 
-							if(isThereLiteral && isThereIdentifier){
-								return `${TagName}_${uuidv4()}: ${e},${allIdentifier}`;
-							}else if(isThereLiteral){
-								return `${TagName}_${uuidv4()}: ${e}`;
-							}else{
-								return e;
-							}
-						
-						}
+				if (isThereLiteral && isThereIdentifier) {
+					return `${TagName}_${uuidv4()}: ${e},${allIdentifier}`;
+				} else if (isThereLiteral) {
+					return `${TagName}_${uuidv4()}: ${e}`;
+				} else {
+					return e;
+				}
 
-					})?.join(",\n").replace(/(\{|\}|\$)/igm,"") || ''}
+			}
+
+		})?.join(",\n").replace(/(\{|\}|\$)/igm, "") || ''}
 				}
 			);
-			${attr.hasOwnProperty("condition")? `
-			${
-				find(ASTParse(attr.condition),{
-					type: 'Identifier'
-				}).map((e,i)=>{
+			${attr.hasOwnProperty("condition") ? `
+			${find(ASTParse(attr.condition), {
+			type: 'Identifier'
+		}).map((e, i) => {
 
-					let addContext = '';
+			let addContext = '';
 
-					if(!stateVariabel.hasOwnProperty(e.name)){
+			if (!stateVariabel.hasOwnProperty(e.name)) {
 
-						stateVariabel = {
-							...stateVariabel,
-							[e.name]: null,
-						};
+				stateVariabel = {
+					...stateVariabel,
+					[e.name]: null,
+				};
 
-						stateIdentifier = {
-							...stateIdentifier,
-							[e.name]: null,
-						}
+				stateIdentifier = {
+					...stateIdentifier,
+					[e.name]: null,
+				}
 
-					}
+			}
 
-					return `
+			return `
 					${addContext}
 					_Observer.subscribe("${e.name}",()=>{
 
-						if(${attr.condition.replace(/\b(?!(false|true)\b)\w+/igm,'$&')}){
+						if(${attr.condition.replace(/\b(?!(false|true)\b)\w+/igm, '$&')}){
 							
-							Node.Render(${TagName},${address? address : '$$_parent'});
+							Node.Render(${TagName},${address ? address : '$$_parent'});
 				
 						}else{
 					
@@ -260,11 +259,11 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 					});
 					`
 
-				}).join(' ')
-			}
-			`:""}
-			${attr.hasOwnProperty("parent")? `Node.Render(${TagName},${address});`:""}
-			Node.registerContext( ${TagName}_content,_Observer);${isFirstChild? "" :`Node.Render(${TagName},${address});`}
+		}).join(' ')
+				}
+			`: ""}
+			${attr.hasOwnProperty("parent") ? `Node.Render(${TagName},${address});` : ""}
+			Node.registerContext( ${TagName}_content,_Observer);${isFirstChild ? "" : `Node.Render(${TagName},${address});`}
 			`,
 		location: Component,
 		attr,
@@ -272,8 +271,8 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 		rootAttr,
 		componentName: TagName,
 		parent: address,
-		content: Component.childNodes.map(e =>{
-			if(e.nodeName === "#text"){
+		content: Component.childNodes.map(e => {
+			if (e.nodeName === "#text") {
 				return e.value
 			}
 		}).join(" "),
@@ -285,21 +284,21 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address,p
 
 	if (Component.childNodes.length > 0) for (let x of Component.childNodes) {
 
-		if (x.nodeName !== "#text") createHTML(x, arrayResult, src, false, TagName,attr,parentAttr? {...parentAttr,...attr} : attr);
+		if (x.nodeName !== "#text") createHTML(x, arrayResult, src, false, TagName, attr, parentAttr ? { ...parentAttr, ...attr } : attr);
 
 	}
 	return arrayResult;
 
 }
 
-module.exports.updateRegisterHTMLElement = (element) =>{ HTMLElementTag[element] = element }
+module.exports.updateRegisterHTMLElement = (element) => { HTMLElementTag[element] = element }
 module.exports.transform = function (_source, callbackComponentArrowFunction, isFirst, API) {
 
 	const StyleSheet = [];
-	let source = _source.replace(/(\r|\t|\n|\s+)/igm," ");
+	let source = _source.replace(/(\r|\t|\n|\s+)/igm, " ");
 	let raw = {
 		source,
-		mappingSource : _source
+		mappingSource: _source
 	}
 
 	// raw data
@@ -314,8 +313,8 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 		sourceCodeLocationInfo: true
 	}).childNodes[0].childNodes[1].childNodes.filter(e => e.nodeName !== "#text");
 	let mappingIndex = 0;
-	for(let map of mappingData){
-		try{
+	for (let map of mappingData) {
+		try {
 			mappingIndexData[mappingIndex] = {
 				source: serialize(map),
 				location: {
@@ -333,12 +332,11 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					}
 				}
 			}
-		}catch(err){
-			console.log(`\n\nFatal \nError at : \n${
-				beautify_html(CLIHiglight(serialize(map),{
-					language: 'jsx'
-				}))
-			}\n\n`);
+		} catch (err) {
+			console.log(`\n\nFatal \nError at : \n${beautify_html(CLIHiglight(serialize(map), {
+				language: 'jsx'
+			}))
+				}\n\n`);
 		}
 		mappingIndex++;
 	}
@@ -346,14 +344,14 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	for (let x of data) {
 
 		let a = {};
-		try{
+		try {
 			a = createHTML(x, [], source, true, "");
-		}catch(err){
+		} catch (err) {
 			// #Error
 
 		}
 		//Seleku Access API to Compiler
-		if(API.getComponent) API.getComponent(a,stateIdentifier,StyleSheet);
+		if (API.getComponent) API.getComponent(a, stateIdentifier, StyleSheet);
 
 		let loopChild = "";
 		let loopArgs = "";
@@ -362,69 +360,69 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 		let loopComponent = [];
 		let nameOfChildContent = [];
 		let loopMethod = "";
-		let calledComponent = {}; 
+		let calledComponent = {};
 		const unuseComponentIndex = [];
-		const rawComponentString = a.map((e,i) =>{
+		const rawComponentString = a.map((e, i) => {
 
-			if(e.rootAttr?.hasOwnProperty("loop")){
+			if (e.rootAttr?.hasOwnProperty("loop")) {
 
 				calledComponent[e.componentName] = e.props;
 
-				if(currentComponentParent !== e.parent){
-				
+				if (currentComponentParent !== e.parent) {
+
 					currentComponentParent = e.parent;
 					loopComponent[i] = e.componentName;
-				
-				}else{
+
+				} else {
 
 					unuseComponentIndex.push(Number(i) - 1);
-					loopComponent[i-1] = e.componentName;
+					loopComponent[i - 1] = e.componentName;
 
 				}
-				
-				if(loopTarget[loopTarget.length-1] !== e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")){
 
-					loopTarget.push(e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,""));
-					stateVariabel[e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")] = null;
+				if (loopTarget[loopTarget.length - 1] !== e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")) {
+
+					loopTarget.push(e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, ""));
+					stateVariabel[e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")] = null;
 
 				}
-				
-				if(loopArgs !== e.rootAttr['loop']){
-				
+
+				if (loopArgs !== e.rootAttr['loop']) {
+
 					loopArgs = e.rootAttr['loop'];
 					loopChild = "";
 					loopChild += e.component;
 					nameOfChildContent = [];
 					nameOfChildContent.push(e.componentName);
-				
-				}else {
-				
+
+				} else {
+
 					loopChild += e.component;
 					nameOfChildContent.push(e.componentName);
-				
+
 				}
 
 				loopMethod = `
-					for(let $$LoopData in ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}){
+					for(let $$LoopData in ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}){
 						if(Number.isInteger(parseInt($$LoopData))){
-							${loopComponent.map((de)=> `ArrayOfComponent_${de}.push($$Template_Function_${de}({
+							${loopComponent.map((de) => `ArrayOfComponent_${de}.push($$Template_Function_${de}({
 								target: null,
-							    data: ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")},
+							    data: ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")},
 							    index: parseInt($$LoopData),
 							},Node));`).join(" ")}
 						}
 					}
 
-					${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")} = ArrayWatcher(${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")},{
+					${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")} = ArrayWatcher(${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")},{
 					watch(target,from,object,property){
 
 							if(from === "set"){
 
-								${loopTarget.map((e,i)=>{
-									return `
+								${loopTarget.map((e, i) => {
+					return `
 										_Observer.emit("${e}_"+target,{data: object, index: property, target});
 									`
-								}).join('\n')}
+				}).join('\n')}
 
 							}
 
@@ -438,41 +436,39 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 				const ArrayOfComponent_${e.componentName} = [];
 				const $$Template_Function_${e.componentName} = ({target,data,index}, Node)=> { 
 					
-					let ${e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")} = data[index];
+					let ${e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")} = data[index];
 					${loopChild}
 
 					return {
 						update(props){
-							${nameOfChildContent.filter(_e => _e).map(__e =>{
-								if(/\_component$/igm.test(__e)){
-									return `${__e}.update(undefined,{${
-										(calledComponent[__e]) ? Object.keys(calledComponent[__e]).map(d =>{
-											return `${d}: props['${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}']`
-										}).join(', ')+',...props' 
-										: 
-										'...props'
-									}});`;
-								}else{
-									return `${__e}_content.update(undefined,{${
-										(calledComponent[__e]) ? Object.keys(calledComponent[__e]).map(d =>{
-											return `${d}: props['${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}']`
-										}).join(', ') +',...props'
-										: 
-										'...props,'
-									}});`;
-								}
-							}).join(" ")}
+							${nameOfChildContent.filter(_e => _e).map(__e => {
+					if (/\_component$/igm.test(__e)) {
+						return `${__e}.update(undefined,{${(calledComponent[__e]) ? Object.keys(calledComponent[__e]).map(d => {
+							return `${d}: props['${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}']`
+						}).join(', ') + ',...props'
+								:
+								'...props'
+							}});`;
+					} else {
+						return `${__e}_content.update(undefined,{${(calledComponent[__e]) ? Object.keys(calledComponent[__e]).map(d => {
+							return `${d}: props['${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}']`
+						}).join(', ') + ',...props'
+								:
+								'...props,'
+							}});`;
+					}
+				}).join(" ")}
 						},
 						destroy(){
-							${nameOfChildContent.filter(e => e).map(e =>{
+							${nameOfChildContent.filter(e => e).map(e => {
 
-								if(/\_component$/igm.test(e)){
-									return `Node.destroy(${e}.element);`;
-								}else {
-									return `Node.destroy(${e});`;
-								}
+					if (/\_component$/igm.test(e)) {
+						return `Node.destroy(${e}.element);`;
+					} else {
+						return `Node.destroy(${e});`;
+					}
 
-							}).join(" ")}
+				}).join(" ")}
 						}
 					}
 				
@@ -500,19 +496,19 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					},
 					update(props){
 						const {data, index} = props;
-						if(ArrayOfComponent_${e.componentName}.length > 0) ArrayOfComponent_${e.componentName}[index].update({${e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}: data[index]});
+						if(ArrayOfComponent_${e.componentName}.length > 0) ArrayOfComponent_${e.componentName}[index].update({${e.rootAttr.loop.split(' ')[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}: data[index]});
 					},
 					remove(props){
 						const {index,data} = props;
 						if(ArrayOfComponent_${e.componentName}.length > 0){
 							ArrayOfComponent_${e.componentName}[index].destroy(props);
 							delete ArrayOfComponent_${e.componentName}[index];
-							delete ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}[index];
+							delete ${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}[index];
 						}
 					}
 				}
 
-				_Observer.subscribe('${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}',()=>{
+				_Observer.subscribe('${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}',()=>{
 
 					if(ArrayOfComponent_${e.componentName}.length > 0){
 						for(let x in ArrayOfComponent_${e.componentName}){
@@ -521,26 +517,26 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 						}
 					}
 
-					for(let $$LoopData in $$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}){
+					for(let $$LoopData in $$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}){
 						if(Number.isInteger(parseInt($$LoopData))){
-							${loopComponent.map((de)=> `ArrayOfComponent_${de}.push($$Template_Function_${de}({
+							${loopComponent.map((de) => `ArrayOfComponent_${de}.push($$Template_Function_${de}({
 								target: null,
-							    data: $$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")},
+							    data: $$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")},
 							    index: parseInt($$LoopData),
 							},Node));`).join(" ")}
 						}
 					}
 
-					$$_SELEKU_PREPROCESS_$$.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")} = ArrayWatcher($$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")},{
+					$$_SELEKU_PREPROCESS_$$.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")} = ArrayWatcher($$State.state.${e.rootAttr.loop.split(' ')[0].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")},{
 					watch(target,from,object,property){
 
 							if(from === "set"){
 
-								${loopTarget.map((e,i)=>{
-									return `
+								${loopTarget.map((e, i) => {
+					return `
 										_Observer.emit("${e}_"+target,{data: object, index: property, target});
 									`
-								}).join('\n')}
+				}).join('\n')}
 
 							}
 
@@ -552,21 +548,21 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 				
 				for(let x in loopHandler_${e.componentName}){
 				
-					_Observer.subscribe("${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm,"")}_"+x,loopHandler_${e.componentName}[x]);
+					_Observer.subscribe("${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}_"+x,loopHandler_${e.componentName}[x]);
 					
 				}
 				`
 			}
 			return e.component
-		
+
 		});
 
-		for(let x of unuseComponentIndex){
+		for (let x of unuseComponentIndex) {
 			rawComponentString[x] = '';
 		}
 
 		result.push({
-			component: rawComponentString.join(" ")+loopMethod,
+			component: rawComponentString.join(" ") + loopMethod,
 			start: a[0].location?.sourceCodeLocation?.startCol,
 			end: a[0].location?.sourceCodeLocation?.endCol,
 			uid: uuidv4()
@@ -577,46 +573,46 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	const JSX = [];
 	const NON_JSX = [];
 
-	result.forEach((e,i) =>{
+	result.forEach((e, i) => {
 
 		JSX.push({
 			component: e.component,
-			raw: source.substring(e.start-1,e.end-1),
+			raw: source.substring(e.start - 1, e.end - 1),
 			position: i
 		});
 
-		if(i !== 0) NON_JSX.push({
-			raw: source.substring(result[i-1].end-1,result[i].start-1),
+		if (i !== 0) NON_JSX.push({
+			raw: source.substring(result[i - 1].end - 1, result[i].start - 1),
 			position: i
 		})
-		else if(i === 0 && NON_JSX.length === 0) NON_JSX.push({
-			raw: source.substring(0,result[i].start-1),
+		else if (i === 0 && NON_JSX.length === 0) NON_JSX.push({
+			raw: source.substring(0, result[i].start - 1),
 			position: i
 		})
 
 	});
 
 	NON_JSX.push({
-		raw: source.substring(result[result.length-1].end-1,source.length),
+		raw: source.substring(result[result.length - 1].end - 1, source.length),
 		position: NON_JSX.length
 	})
 
 	let lastResult = "";
 
-	for(let x in NON_JSX){
+	for (let x in NON_JSX) {
 
-		if(parseInt(x) < NON_JSX.length-1) lastResult += NON_JSX[x].raw + JSX[x].component
+		if (parseInt(x) < NON_JSX.length - 1) lastResult += NON_JSX[x].raw + JSX[x].component
 		else lastResult += NON_JSX[x].raw
 
 	}
 
 	const SelekuResult = beautify(lastResult.replace(/(\n\n)/igm, "\n"), { indent_size: 2, space_in_empty_paren: true });
-	
+
 	let tree = ASTParse('//nothing here');
-	
-	try{
+
+	try {
 		tree = ASTParse(SelekuResult);
-	}catch(err){
+	} catch (err) {
 		//#Error
 
 		// console.log(SelekuResult.split('\n')[err.line].substring(err.col));
@@ -625,54 +621,54 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 
 	let selekuComponent = {};
-	walk(tree,(node,parent)=>{
+	walk(tree, (node, parent) => {
 
-		if(node.type === 'VariableDeclarator'){
+		if (node.type === 'VariableDeclarator') {
 
-			if(node.init?.type === 'ArrowFunctionExpression' && 
-			   node.id.type === 'Identifier'){
+			if (node.init?.type === 'ArrowFunctionExpression' &&
+				node.id.type === 'Identifier') {
 
-				node.init?.body?.body?.forEach((e,i)=>{
+				node.init?.body?.body?.forEach((e, i) => {
 
-					if(e.type === 'VariableDeclaration' && 
-					e.declarations[0].init.type === 'CallExpression' && 
-					e.declarations[0].init.callee.type === 'MemberExpression' && 
-					e.declarations[0].init.callee.object.name === 'Seleku'){
+					if (e.type === 'VariableDeclaration' &&
+						e.declarations[0].init.type === 'CallExpression' &&
+						e.declarations[0].init.callee.type === 'MemberExpression' &&
+						e.declarations[0].init.callee.object.name === 'Seleku') {
 						selekuComponent[node.id.name] = null;
 					}
 				});
 
-				callbackComponentArrowFunction({node,from: 'ArrowFunctionExpression'});
+				callbackComponentArrowFunction({ node, from: 'ArrowFunctionExpression' });
 			}
 		}
 
-		if(node.type === 'VariableDeclarator'){
+		if (node.type === 'VariableDeclarator') {
 
-			if(node.init?.type === 'FunctionExpression' && 
-			   node.id.type === 'Identifier'){
+			if (node.init?.type === 'FunctionExpression' &&
+				node.id.type === 'Identifier') {
 
-			   
-				node.init?.body?.body?.forEach((e,i)=>{
 
-					if(e.type === 'VariableDeclaration' && 
-					e.declarations[0].init.type === 'CallExpression' && 
-					e.declarations[0].init.callee.type === 'MemberExpression' && 
-					e.declarations[0].init.callee.object.name === 'Seleku'){
-						
+				node.init?.body?.body?.forEach((e, i) => {
+
+					if (e.type === 'VariableDeclaration' &&
+						e.declarations[0].init.type === 'CallExpression' &&
+						e.declarations[0].init.callee.type === 'MemberExpression' &&
+						e.declarations[0].init.callee.object.name === 'Seleku') {
+
 						selekuComponent[node.id.name] = null;
 					}
 
-					if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
+					if (e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku') {
 						node.init?.body?.body.push({
-						  type: 'ReturnStatement',
-						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
-							  	${component_loop_child.map(d =>{
-							  		return `
+							type: 'ReturnStatement',
+							argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
+							  	${component_loop_child.map(d => {
+								return `
 							  			
-							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
+							  			${d.replace(/\_content/igm, '_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
+							}).join(' ') + '$$State.state[state]=value;'}}})`)
 						});
 
 						onceTime = true;
@@ -680,214 +676,214 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 				});
 
-				callbackComponentArrowFunction({node,from: 'ArrowFunctionExpression'});
+				callbackComponentArrowFunction({ node, from: 'ArrowFunctionExpression' });
 			}
 		}
 
-		if(node.type === 'FunctionDeclaration'){
+		if (node.type === 'FunctionDeclaration') {
 
-			node.body?.body?.forEach((e,i)=>{
+			node.body?.body?.forEach((e, i) => {
 
-				if(e.type === 'VariableDeclaration' && 
-					e.declarations[0].init.type === 'CallExpression' && 
-					e.declarations[0].init.callee.type === 'MemberExpression' && 
-					e.declarations[0].init.callee.object.name === 'Seleku'){
+				if (e.type === 'VariableDeclaration' &&
+					e.declarations[0].init.type === 'CallExpression' &&
+					e.declarations[0].init.callee.type === 'MemberExpression' &&
+					e.declarations[0].init.callee.object.name === 'Seleku') {
 					selekuComponent[node.id.name] = null;
 				}
 
 			});
 
-			callbackComponentArrowFunction({node,from: 'FunctionDeclaration'});
+			callbackComponentArrowFunction({ node, from: 'FunctionDeclaration' });
 		}
 	});
 
 	let parents = '';
-	walk(tree,(node, parent)=>{
+	walk(tree, (node, parent) => {
 
-		if(node.type === 'VariableDeclarator'){
+		if (node.type === 'VariableDeclarator') {
 
-			if(node.init?.type === 'ArrowFunctionExpression' && 
-			   node.id.type === 'Identifier'){
+			if (node.init?.type === 'ArrowFunctionExpression' &&
+				node.id.type === 'Identifier') {
 
-			   	let onceTime = false;
-			    let state = {};
-			    let component_loop_child = [];
+				let onceTime = false;
+				let state = {};
+				let component_loop_child = [];
 
-			    node.init?.body?.body?.forEach((e,i)=>{
-			    	if(e.type === 'VariableDeclaration'){
-						if(/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
+				node.init?.body?.body?.forEach((e, i) => {
+					if (e.type === 'VariableDeclaration') {
+						if (/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
 					}
-			    });
+				});
 
-				node.init?.body?.body?.forEach((e,i)=>{
+				node.init?.body?.body?.forEach((e, i) => {
 
-					if(e.type === 'VariableDeclaration' && 
-					e.declarations[0].init.type === 'CallExpression' && 
-					e.declarations[0].init.callee.type === 'MemberExpression' && 
-					e.declarations[0].init.callee.object.name === 'Seleku'){
+					if (e.type === 'VariableDeclaration' &&
+						e.declarations[0].init.type === 'CallExpression' &&
+						e.declarations[0].init.callee.type === 'MemberExpression' &&
+						e.declarations[0].init.callee.object.name === 'Seleku') {
 						componentFunctionName[node.id?.name] = null;
 						parents = node.id?.name;
 					}
 
-					if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
+					if (e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku') {
 						node.init?.body?.body.push({
-						  type: 'ReturnStatement',
-						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
-							  	${component_loop_child.map(d =>{
-							  		return `
+							type: 'ReturnStatement',
+							argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
+							  	${component_loop_child.map(d => {
+								return `
 							  			
-							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
+							  			${d.replace(/\_content/igm, '_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
+							}).join(' ') + '$$State.state[state]=value;'}}})`)
 						});
 						onceTime = true;
 					}
 
 				});
 
-				callbackComponentArrowFunction({node,from: 'ArrowFunctionExpression'});
+				callbackComponentArrowFunction({ node, from: 'ArrowFunctionExpression' });
 			}
 		}
 
-		if(node.type === 'VariableDeclarator'){
+		if (node.type === 'VariableDeclarator') {
 
-			if(node.init?.type === 'FunctionExpression' && 
-			   node.id.type === 'Identifier'){
+			if (node.init?.type === 'FunctionExpression' &&
+				node.id.type === 'Identifier') {
 
-			   	let onceTime = false;
-			    let state = {};
-			    let component_loop_child = [];
+				let onceTime = false;
+				let state = {};
+				let component_loop_child = [];
 
-			    node.init?.body?.body?.forEach((e,i)=>{
-			    	if(e.type === 'VariableDeclaration'){
-						if(/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
+				node.init?.body?.body?.forEach((e, i) => {
+					if (e.type === 'VariableDeclaration') {
+						if (/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
 					}
-			    });
+				});
 
-				node.init?.body?.body?.forEach((e,i)=>{
+				node.init?.body?.body?.forEach((e, i) => {
 
-					if(e.type === 'VariableDeclaration' && 
-					e.declarations[0].init.type === 'CallExpression' && 
-					e.declarations[0].init.callee.type === 'MemberExpression' && 
-					e.declarations[0].init.callee.object.name === 'Seleku'){
+					if (e.type === 'VariableDeclaration' &&
+						e.declarations[0].init.type === 'CallExpression' &&
+						e.declarations[0].init.callee.type === 'MemberExpression' &&
+						e.declarations[0].init.callee.object.name === 'Seleku') {
 						componentFunctionName[node.id?.name] = null;
 						parents = node.id?.name;
-						
+
 					}
 
-					if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
+					if (e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku') {
 						node.init?.body?.body.push({
-						  type: 'ReturnStatement',
-						  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
-							  	${component_loop_child.map(d =>{
-							  		return `
+							type: 'ReturnStatement',
+							argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
+							  	${component_loop_child.map(d => {
+								return `
 							  			
-							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
+							  			${d.replace(/\_content/igm, '_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
+							}).join(' ') + '$$State.state[state]=value;'}}})`)
 						});
 
 						onceTime = true;
 					}
 
-					if(e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel){
+					if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel) {
 
 						state[e.declarations[0].id.name] = null;
-						if(/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
+						if (/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
 
 					}
 
-					if(e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')){
-						if(!(e.expression.argument.name in state)){
+					if (e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')) {
+						if (!(e.expression.argument.name in state)) {
 							e.expression.argument.name = `$$State.state.${e.expression.argument.name}`;
 						}
 					}
 
-					if(e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression'){
-						if(!(e.expression.left.name in state)){
-							e.expression.left.name = `$$State.state.${e.expression.left.name}`;	
+					if (e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression') {
+						if (!(e.expression.left.name in state)) {
+							e.expression.left.name = `$$State.state.${e.expression.left.name}`;
 						}
 					}
 
 				});
 
-				callbackComponentArrowFunction({node,from: 'ArrowFunctionExpression'});
+				callbackComponentArrowFunction({ node, from: 'ArrowFunctionExpression' });
 			}
 		}
 
-		if(node.type === 'FunctionDeclaration'){
+		if (node.type === 'FunctionDeclaration') {
 			let onceTime = false;
 			let state = {};
 			let component_loop_child = [];
 
-			node.body?.body?.forEach((e,i)=>{
-		    	if(e.type === 'VariableDeclaration'){
-					if(/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
+			node.body?.body?.forEach((e, i) => {
+				if (e.type === 'VariableDeclaration') {
+					if (/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
 				}
-		    });
+			});
 
-			node.body?.body?.forEach((e,i)=>{
+			node.body?.body?.forEach((e, i) => {
 
-				if(e.type === 'VariableDeclaration' && 
-					e.declarations[0].init.type === 'CallExpression' && 
-					e.declarations[0].init.callee.type === 'MemberExpression' && 
-					e.declarations[0].init.callee.object.name === 'Seleku'){
+				if (e.type === 'VariableDeclaration' &&
+					e.declarations[0].init.type === 'CallExpression' &&
+					e.declarations[0].init.callee.type === 'MemberExpression' &&
+					e.declarations[0].init.callee.object.name === 'Seleku') {
 					componentFunctionName[node.id?.name] = null;
 					parents = node.id?.name;
 				}
 
-				if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
+				if (e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku') {
 					node.body?.body.push({
-					  type: 'ReturnStatement',
-					  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
-							  	${component_loop_child.map(d =>{
-							  		return `
+						type: 'ReturnStatement',
+						argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
+							  	${component_loop_child.map(d => {
+							return `
 							  			
-							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
+							  			${d.replace(/\_content/igm, '_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
+						}).join(' ') + '$$State.state[state]=value;'}}})`)
 					});
 					onceTime = true;
 				}
 
-				if(e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel){
+				if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel) {
 
 					state[e.declarations[0].id.name] = null;
-					
+
 				}
 
-				if(e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')){
-					if(!(e.expression.argument.name in state)){
+				if (e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')) {
+					if (!(e.expression.argument.name in state)) {
 						e.expression.argument.name = `$$State.state.${e.expression.argument.name}`;
 					}
 				}
 
-				if(e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression'){
-					
-					if(!(e.expression.left.name in state)){
-						e.expression.left.name = `$$State.state.${e.expression.left.name}`;	
+				if (e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression') {
+
+					if (!(e.expression.left.name in state)) {
+						e.expression.left.name = `$$State.state.${e.expression.left.name}`;
 					}
 				}
 
 
 			});
 
-			callbackComponentArrowFunction({node,from: 'FunctionDeclaration'});
+			callbackComponentArrowFunction({ node, from: 'FunctionDeclaration' });
 		}
 
-		if(node.type === 'CallExpression'){
+		if (node.type === 'CallExpression') {
 
-			if(node.callee.type === 'Identifier'){
+			if (node.callee.type === 'Identifier') {
 
-				if(node.callee.name === 'Watcher'){
+				if (node.callee.name === 'Watcher') {
 
-					node.arguments.push({type: 'Identifier', name: '_Observer'});
+					node.arguments.push({ type: 'Identifier', name: '_Observer' });
 
 					let watchState = {};
-					node.arguments[1].elements.map(e =>{
+					node.arguments[1].elements.map(e => {
 						watchState[e.name] = null;
 						e.name = `"${e.name}"`;
 					});
@@ -895,50 +891,50 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 					let state = {};
 					let component_loop_child = [];
 					let onceTime = false;
-					node.arguments[0]?.body?.body?.forEach((e,i)=>{
-				    	if(e.type === 'VariableDeclaration'){
-							if(/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
+					node.arguments[0]?.body?.body?.forEach((e, i) => {
+						if (e.type === 'VariableDeclaration') {
+							if (/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
 						}
-				    });
-					node.arguments[0]?.body?.body?.forEach((e,i)=>{
+					});
+					node.arguments[0]?.body?.body?.forEach((e, i) => {
 
-						if(e.type === 'VariableDeclaration' && 
-						e.declarations[0].init.type === 'CallExpression' && 
-						e.declarations[0].init.callee.type === 'MemberExpression' && 
-						e.declarations[0].init.callee.object.name === 'Seleku'){
+						if (e.type === 'VariableDeclaration' &&
+							e.declarations[0].init.type === 'CallExpression' &&
+							e.declarations[0].init.callee.type === 'MemberExpression' &&
+							e.declarations[0].init.callee.object.name === 'Seleku') {
 							componentFunctionName[node.id?.name] = null;
 						}
 
-						if(e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku'){
+						if (e.type === 'VariableDeclaration' && !onceTime && e.declarations[0]?.init?.callee?.object?.name === 'Seleku') {
 							node.init?.body?.body.push({
-							  type: 'ReturnStatement',
-							  argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
-							  	${component_loop_child.map(d =>{
-							  		return `
+								type: 'ReturnStatement',
+								argument: ASTParse(`({element: ${e.declarations[0].id.name},update(content,data,state,value){
+							  	${component_loop_child.map(d => {
+									return `
 							  			
-							  			${d.replace(/\_content/igm,'_attribute')}.update(data);
+							  			${d.replace(/\_content/igm, '_attribute')}.update(data);
 							  			${d}.update(content,data);
 							  			`
-							  	}).join(' ')+'$$State.state[state]=value;'}}})`)
+								}).join(' ') + '$$State.state[state]=value;'}}})`)
 							});
 							onceTime = true;
 						}
 
-						if(e.type === 'VariableDeclaration'){
+						if (e.type === 'VariableDeclaration') {
 
 							state[e.declarations[0].id.name] = null;
-							if(/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
+							if (/\_content/igm.test(e.declarations[0].id.name)) component_loop_child.push(e.declarations[0].id.name);
 
 						}
 
-				
-						if(e.type === 'VariableDeclaration'){
-						if(e.declarations[0].init?.type === 'ArrowFunctionExpression' && 
-						   e.declarations[0].id.type === 'Identifier'){
 
-								e.declarations[0].init?.body?.body?.forEach((_e,i)=>{
+						if (e.type === 'VariableDeclaration') {
+							if (e.declarations[0].init?.type === 'ArrowFunctionExpression' &&
+								e.declarations[0].id.type === 'Identifier') {
 
-									if(_e.type === 'VariableDeclaration'){
+								e.declarations[0].init?.body?.body?.forEach((_e, i) => {
+
+									if (_e.type === 'VariableDeclaration') {
 
 										state[_e.declarations[0].id.name] = null;
 
@@ -946,21 +942,21 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 								});
 
-								callbackComponentArrowFunction({e,from: 'ArrowFunctionExpression'});
+								callbackComponentArrowFunction({ e, from: 'ArrowFunctionExpression' });
 							}
 						}
 
 
-						if(e.type === 'FunctionDeclaration'){
-							e.body?.body?.forEach((_e,i)=>{
-								if(_e.type === 'VariableDeclaration'){
+						if (e.type === 'FunctionDeclaration') {
+							e.body?.body?.forEach((_e, i) => {
+								if (_e.type === 'VariableDeclaration') {
 
 									state[_e.declarations[0].id.name] = null;
-									
+
 								}
 							});
 
-							callbackComponentArrowFunction({e,from: 'FunctionDeclaration'});
+							callbackComponentArrowFunction({ e, from: 'FunctionDeclaration' });
 						}
 
 					});
@@ -970,102 +966,98 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 			}
 		}
 
-		if(node.type === 'ArrowFunctionExpression'){
+		if (node.type === 'ArrowFunctionExpression') {
 			let state = {};
 
-			if(!(node.body?.body)){
-				if(parents in selekuComponent && node.body.type === 'UpdateExpression'){
-					if(!(node.body.argument.name in state)){
+			if (!(node.body?.body)) {
+				if (parents in selekuComponent && node.body.type === 'UpdateExpression') {
+					if (!(node.body.argument.name in state)) {
 						node.body.argument.name = `$$State.state.${node.body.argument.name}`;
 					}
 				}
 			}
 
-			node.body?.body?.forEach((e,i)=>{
-				if(e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel){
+			node.body?.body?.forEach((e, i) => {
+				if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel) {
 					state[e.declarations[0].id.name] = null;
 				}
 
-				find(e,{type: 'VariableDeclaration'}).forEach(e =>{
-					if(e.declarations[0].id.name in stateIdentifier){
+				find(e, { type: 'VariableDeclaration' }).forEach(e => {
+					if (e.declarations[0].id.name in stateIdentifier) {
 						state[e.declarations[0].id.name] = null;
-						if(parent.type === 'VariableDeclarator' && !(parent.id.name.match(/\$\$Template_Function/)) && !(generate(node.body.body[i]).match(/\$\$Template_Function/))){
+						if (parent.type === 'VariableDeclarator' && !(parent.id.name.match(/\$\$Template_Function/)) && !(generate(node.body.body[i]).match(/\$\$Template_Function/))) {
 							node.body.body[i] = ASTParse(generate(node.body.body[i])
-							.replace(
-								generate(e),
-								generate(e)+`$$$State.state.${
-									e.declarations[0].id.name
-								} = ${
-									e.declarations[0].id.name
-								}\n\n`));
+								.replace(
+									generate(e),
+									generate(e) + `$$$State.state.${e.declarations[0].id.name
+									} = ${e.declarations[0].id.name
+									}\n\n`));
 						}
 					}
 				});
 
-				if(parents in selekuComponent && e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')){
-					if(!(e.expression.argument.name in state)){
+				if (parents in selekuComponent && e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')) {
+					if (!(e.expression.argument.name in state)) {
 						e.expression.argument.name = `$$State.state.${e.expression.argument.name}`;
 					}
 				}
 
-				if(parents in selekuComponent && e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression'){
-					if(!(e.expression.left.name in state)){
-						e.expression.left.name = `$$State.state.${e.expression.left.name}`;	
+				if (parents in selekuComponent && e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression') {
+					if (!(e.expression.left.name in state)) {
+						e.expression.left.name = `$$State.state.${e.expression.left.name}`;
 					}
 				}
 
-				find(e,{type: 'AssignmentExpression'}).forEach(e=>{
-					if(parents in selekuComponent && !(e.left.name in state) && !(/\$\$State\.state/igm.test(e.left.name))){
+				find(e, { type: 'AssignmentExpression' }).forEach(e => {
+					if (parents in selekuComponent && !(e.left.name in state) && !(/\$\$State\.state/igm.test(e.left.name))) {
 						e.left.name = `$$State.state.${e.left.name}`;
 					}
 				});
 			});
 		}
 
-		if(node.type === 'FunctionExpression'){
+		if (node.type === 'FunctionExpression') {
 			let state = {};
-			node.body.body.forEach((e,i)=>{
-				if(e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel){
+			node.body.body.forEach((e, i) => {
+				if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel) {
 					state[e.declarations[0].id.name] = null;
 				}
 
-				find(e,{type: 'VariableDeclaration'}).forEach(e =>{
-					if(e.declarations[0].id.name in stateVariabel){
+				find(e, { type: 'VariableDeclaration' }).forEach(e => {
+					if (e.declarations[0].id.name in stateVariabel) {
 						state[e.declarations[0].id.name] = null;
-						if(parent.type === 'VariableDeclarator' && !(parent.id.name.match(/\$\$Template_Function/)) && !(generate(node.body.body[i]).match(/\$\$Template_Function/))){
-							
+						if (parent.type === 'VariableDeclarator' && !(parent.id.name.match(/\$\$Template_Function/)) && !(generate(node.body.body[i]).match(/\$\$Template_Function/))) {
+
 							node.body.body[i] = ASTParse(generate(node.body.body[i])
-							.replace(
-								generate(e),
-								generate(e)+`$$$State.state.${
-									e.declarations[0].id.name
-								} = ${
-									e.declarations[0].id.name
-								}\n\n`));
+								.replace(
+									generate(e),
+									generate(e) + `$$$State.state.${e.declarations[0].id.name
+									} = ${e.declarations[0].id.name
+									}\n\n`));
 						}
-					}					
+					}
 				})
 
-				if(e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')){
-					if(!(e.expression.argument.name in state)){
+				if (e.type === 'ExpressionStatement' && (e.expression.type === 'UpdateExpression')) {
+					if (!(e.expression.argument.name in state)) {
 						e.expression.argument.name = `$$State.state.${e.expression.argument.name}`;
 					}
 				}
 
-				if(e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression'){
-					if(!(e.expression.left.name in state)){
-						e.expression.left.name = `$$State.state.${e.expression.left.name}`;	
+				if (e.type === 'ExpressionStatement' && e.expression.type === 'AssignmentExpression') {
+					if (!(e.expression.left.name in state)) {
+						e.expression.left.name = `$$State.state.${e.expression.left.name}`;
 					}
 				}
 
-				find(e,{type: 'AssignmentExpression'}).forEach(e=>{
-					if(!(e.left.name in state) && !(/\$\$State\.state/igm.test(e.left.name))){
+				find(e, { type: 'AssignmentExpression' }).forEach(e => {
+					if (!(e.left.name in state) && !(/\$\$State\.state/igm.test(e.left.name))) {
 						e.left.name = `$$State.state.${e.left.name}`;
 					}
 				});
 
-				find(e,{type: 'UpdateExpression'}).forEach(e=>{
-					if(!(e.argument.name in state) && !(/\$\$State\.state/igm.test(e.argument.name))){
+				find(e, { type: 'UpdateExpression' }).forEach(e => {
+					if (!(e.argument.name in state) && !(/\$\$State\.state/igm.test(e.argument.name))) {
 						e.argument.name = `$$State.state.${e.argument.name}`;
 					}
 				});
@@ -1075,54 +1067,54 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 		}
 	});
 
-	walk(tree,(node,parent)=>{
+	walk(tree, (node, parent) => {
 
-		if(node.type === 'ArrowFunctionExpression'){
+		if (node.type === 'ArrowFunctionExpression') {
 
 			let state = {};
-			node.body?.body?.forEach((e,i)=>{
-				
-				if(e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel){
+			node.body?.body?.forEach((e, i) => {
+
+				if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel) {
 					state[e.declarations[0].id.name] = null;
 				}
 
-				if(node.body?.body[i].type !== 'VariableDeclaration'){
-					if(node.body?.body[i].body){
-						walk(node.body?.body[i],(_node,_parent)=>{
-							if(_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node'){
+				if (node.body?.body[i].type !== 'VariableDeclaration') {
+					if (node.body?.body[i].body) {
+						walk(node.body?.body[i], (_node, _parent) => {
+							if (_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node') {
 								let obj = {};
-								_node.arguments.forEach(d =>{
-									Object.assign(obj,d);
+								_node.arguments.forEach(d => {
+									Object.assign(obj, d);
 								});
-								walk(_node,((e,p)=>{
-									if(e.type !== 'VariableDeclaration' && !(e.name in state) && e.name in stateIdentifier){
-										if(p.type !== 'VariableDeclarator'){
-											 find(_node,{type: 'Identifier'}).forEach((e,i) =>{
-												if(!(e.name in state) && e.name in stateIdentifier){
-													if(/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm,''))){
-														
-														let ty = generate(obj);
-														ty.replace(/(\n|\t|\r|\s+|\{|\})/igm,'')
-														.split(',')
-														.filter(r => /\w.*?\:/igm.test(r))
-														.forEach((d =>{
-															if(d.match(new RegExp(`^${generate(e)}:`))){
-																ty = d.replace(new RegExp(`^${generate(e)}\\:`),'')
-																// console.
-															}
-														}));
+								walk(_node, ((e, p) => {
+									if (e.type !== 'VariableDeclaration' && !(e.name in state) && e.name in stateIdentifier) {
+										if (p.type !== 'VariableDeclarator') {
+											find(_node, { type: 'Identifier' }).forEach((e, i) => {
+												if (!(e.name in state) && e.name in stateIdentifier) {
+													if (/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm, ''))) {
 
-														walk(_node,(n,p)=>{
-															if(n.type === 'Property'){ 
-																if(ty.match(e.name) && n.value.type === 'Identifier'){
-																	n.value.name = (generate(obj).replaceAll(ty,`$$$State.state.${e.name}`));
+														let ty = generate(obj);
+														ty.replace(/(\n|\t|\r|\s+|\{|\})/igm, '')
+															.split(',')
+															.filter(r => /\w.*?\:/igm.test(r))
+															.forEach((d => {
+																if (d.match(new RegExp(`^${generate(e)}:`))) {
+																	ty = d.replace(new RegExp(`^${generate(e)}\\:`), '')
+																	// console.
+																}
+															}));
+
+														walk(_node, (n, p) => {
+															if (n.type === 'Property') {
+																if (ty.match(e.name) && n.value.type === 'Identifier') {
+																	n.value.name = (generate(obj).replaceAll(ty, `$$$State.state.${e.name}`));
 																}
 															}
 														});
 
 
 
-													}else{
+													} else {
 														e.name = `$$State.state.${e.name}`;
 													}
 												}
@@ -1134,42 +1126,42 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 						});
 
 					}
-					if(node.body?.body[i].expression?.type === 'CallExpression'){
-						walk(node.body?.body[i],(_node,_parent)=>{
-							if(_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node'){
+					if (node.body?.body[i].expression?.type === 'CallExpression') {
+						walk(node.body?.body[i], (_node, _parent) => {
+							if (_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node') {
 								let obj = {};
-								_node.arguments.forEach(d =>{
-									Object.assign(obj,d);
+								_node.arguments.forEach(d => {
+									Object.assign(obj, d);
 								});
-								find(_node,{type: 'Identifier'}).forEach(e =>{
-									
-									if(!(e.name in state) && e.name in stateIdentifier){
-										find(_node,{type: 'Identifier'}).forEach((e,i) =>{
-											if(!(e.name in state) && e.name in stateIdentifier){
-												if(/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm,''))){
-													
-													let ty = generate(obj);
-													ty.replace(/(\n|\t|\r|\s+|\{|\})/igm,'')
-													.split(',')
-													.filter(r => /\w.*?\:/igm.test(r))
-													.forEach((d =>{
-														if(d.match(new RegExp(`^${generate(e)}:`))){
-															ty = d.replace(new RegExp(`^${generate(e)}\\:`),'')
-															// console.
-														}
-													}));
+								find(_node, { type: 'Identifier' }).forEach(e => {
 
-													walk(_node,(n,p)=>{
-														if(n.type === 'Property'){ 
-															if(ty.match(e.name) && n.value.type === 'Identifier'){
-																n.value.name = (generate(obj).replaceAll(ty,`$$$State.state.${e.name}`));
+									if (!(e.name in state) && e.name in stateIdentifier) {
+										find(_node, { type: 'Identifier' }).forEach((e, i) => {
+											if (!(e.name in state) && e.name in stateIdentifier) {
+												if (/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm, ''))) {
+
+													let ty = generate(obj);
+													ty.replace(/(\n|\t|\r|\s+|\{|\})/igm, '')
+														.split(',')
+														.filter(r => /\w.*?\:/igm.test(r))
+														.forEach((d => {
+															if (d.match(new RegExp(`^${generate(e)}:`))) {
+																ty = d.replace(new RegExp(`^${generate(e)}\\:`), '')
+																// console.
+															}
+														}));
+
+													walk(_node, (n, p) => {
+														if (n.type === 'Property') {
+															if (ty.match(e.name) && n.value.type === 'Identifier') {
+																n.value.name = (generate(obj).replaceAll(ty, `$$$State.state.${e.name}`));
 															}
 														}
 													});
 
 
 
-												}else{
+												} else {
 													e.name = `$$State.state.${e.name}`;
 												}
 											}
@@ -1183,55 +1175,55 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 			});
 		}
 
-		if(node.type === 'FunctionExpression'){
+		if (node.type === 'FunctionExpression') {
 
 			let state = {};
-			node.body?.body?.forEach((e,i)=>{
-				
-				if(e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel){
+			node.body?.body?.forEach((e, i) => {
+
+				if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in stateVariabel) {
 					state[e.declarations[0].id.name] = null;
 				}
 
-				if(node.body?.body[i].type !== 'VariableDeclaration'){
-					if(node.body?.body[i].body){
-						walk(node.body?.body[i],(_node,_parent)=>{
-							
-							if(_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node'){
-								
+				if (node.body?.body[i].type !== 'VariableDeclaration') {
+					if (node.body?.body[i].body) {
+						walk(node.body?.body[i], (_node, _parent) => {
+
+							if (_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node') {
+
 								let obj = {};
-								_node.arguments.forEach(d =>{
-									Object.assign(obj,d);
+								_node.arguments.forEach(d => {
+									Object.assign(obj, d);
 								});
 
-								walk(_node,((e,p)=>{				
-									if(e.type !== 'VariableDeclaration' && !(e.name in state) && e.name in stateIdentifier){
-										if(p.type !== 'VariableDeclarator'){
-											 find(_node,{type: 'Identifier'}).forEach((e,i) =>{
-												if(!(e.name in state) && e.name in stateIdentifier){
-													if(/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm,''))){
-														
-														let ty = generate(obj);
-														ty.replace(/(\n|\t|\r|\s+|\{|\})/igm,'')
-														.split(',')
-														.filter(r => /\w.*?\:/igm.test(r))
-														.forEach((d =>{
-															if(d.match(new RegExp(`^${generate(e)}:`))){
-																ty = d.replace(new RegExp(`^${generate(e)}\\:`),'')
-																// console.
-															}
-														}));
+								walk(_node, ((e, p) => {
+									if (e.type !== 'VariableDeclaration' && !(e.name in state) && e.name in stateIdentifier) {
+										if (p.type !== 'VariableDeclarator') {
+											find(_node, { type: 'Identifier' }).forEach((e, i) => {
+												if (!(e.name in state) && e.name in stateIdentifier) {
+													if (/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm, ''))) {
 
-														walk(_node,(n,p)=>{
-															if(n.type === 'Property'){ 
-																if(ty.match(e.name) && n.value.type === 'Identifier'){
-																	n.value.name = (generate(obj).replaceAll(ty,`$$$State.state.${e.name}`));
+														let ty = generate(obj);
+														ty.replace(/(\n|\t|\r|\s+|\{|\})/igm, '')
+															.split(',')
+															.filter(r => /\w.*?\:/igm.test(r))
+															.forEach((d => {
+																if (d.match(new RegExp(`^${generate(e)}:`))) {
+																	ty = d.replace(new RegExp(`^${generate(e)}\\:`), '')
+																	// console.
+																}
+															}));
+
+														walk(_node, (n, p) => {
+															if (n.type === 'Property') {
+																if (ty.match(e.name) && n.value.type === 'Identifier') {
+																	n.value.name = (generate(obj).replaceAll(ty, `$$$State.state.${e.name}`));
 																}
 															}
 														});
 
 
 
-													}else{
+													} else {
 														e.name = `$$State.state.${e.name}`;
 													}
 												}
@@ -1243,40 +1235,40 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 						});
 
 					}
-					if(node.body?.body[i].expression?.type === 'CallExpression'){
-						walk(node.body?.body[i],(_node,_parent)=>{
-							if(_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node'){
+					if (node.body?.body[i].expression?.type === 'CallExpression') {
+						walk(node.body?.body[i], (_node, _parent) => {
+							if (_node.type === 'CallExpression' && _node.callee.object?.name !== 'Node') {
 								let obj = {};
-								_node.arguments.forEach(d =>{
-									Object.assign(obj,d);
+								_node.arguments.forEach(d => {
+									Object.assign(obj, d);
 								});
-								
-								find(_node,{type: 'Identifier'}).forEach((e,i) =>{
-									if(!(e.name in state) && e.name in stateIdentifier){
-										if(/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm,''))){
-											
-											let ty = generate(obj);
-											ty.replace(/(\n|\t|\r|\s+|\{|\})/igm,'')
-											.split(',')
-											.filter(r => /\w.*?\:/igm.test(r))
-											.forEach((d =>{
-												if(d.match(new RegExp(`^${generate(e)}:`))){
-													ty = d.replace(new RegExp(`^${generate(e)}\\:`),'')
-													// console.
-												}
-											}));
 
-											walk(_node,(n,p)=>{
-												if(n.type === 'Property'){ 
-													if(ty.match(e.name) && n.value.type === 'Identifier'){
-														n.value.name = (generate(obj).replaceAll(ty,`$$$State.state.${e.name}`));
+								find(_node, { type: 'Identifier' }).forEach((e, i) => {
+									if (!(e.name in state) && e.name in stateIdentifier) {
+										if (/^\{.*?\}$/igm.test(generate(obj).replace(/(\n|\t|\r)/igm, ''))) {
+
+											let ty = generate(obj);
+											ty.replace(/(\n|\t|\r|\s+|\{|\})/igm, '')
+												.split(',')
+												.filter(r => /\w.*?\:/igm.test(r))
+												.forEach((d => {
+													if (d.match(new RegExp(`^${generate(e)}:`))) {
+														ty = d.replace(new RegExp(`^${generate(e)}\\:`), '')
+														// console.
+													}
+												}));
+
+											walk(_node, (n, p) => {
+												if (n.type === 'Property') {
+													if (ty.match(e.name) && n.value.type === 'Identifier') {
+														n.value.name = (generate(obj).replaceAll(ty, `$$$State.state.${e.name}`));
 													}
 												}
 											});
 
 
 
-										}else{
+										} else {
 											e.name = `$$State.state.${e.name}`;
 										}
 									}
@@ -1288,43 +1280,41 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 			});
 		}
 
-		if(node.type === 'CallExpression'){
+		if (node.type === 'CallExpression') {
 
-			if(node.callee.type === 'Identifier'){
+			if (node.callee.type === 'Identifier') {
 
-				if(node.callee.name === 'Watcher'){
+				if (node.callee.name === 'Watcher') {
 
 					let watchState = {};
-					node.arguments[1].elements.map(e =>{
-						watchState[e.name.replace(/(\"|\'|\`)/igm,'')] = null;
+					node.arguments[1].elements.map(e => {
+						watchState[e.name.replace(/(\"|\'|\`)/igm, '')] = null;
 					});
 
-					node.arguments[0]?.body?.body?.forEach((e,i)=>{
+					node.arguments[0]?.body?.body?.forEach((e, i) => {
 
-						find(e,{type: 'UpdateExpression'}).forEach(e=>{
-							if(e.argument.name.match(/\$\$State\.state\./igm) && e.argument.name.replace('$$State.state.','') in watchState){
-								console.log(`\n\nFatal : \n "cannot assign or update variabel that has been watched" \nError at : \n${
-								highlight(generate(node).replace(generate(e),'$& //<-- at this').replace(/\$\$State\.state\./igm,''),{
-								 	jsx: true,
-								 	linenos: true,
-								 	theme: require('cardinal/themes/tomorrow-night.js')
-								 })
-								}\n`);
-								console.log(`warning at "${generate(e).replace(/\$\$State\.state\./igm,'')}"`)
+						find(e, { type: 'UpdateExpression' }).forEach(e => {
+							if (e.argument.name.match(/\$\$State\.state\./igm) && e.argument.name.replace('$$State.state.', '') in watchState) {
+								console.log(`\n\nFatal : \n "cannot assign or update variabel that has been watched" \nError at : \n${highlight(generate(node).replace(generate(e), '$& //<-- at this').replace(/\$\$State\.state\./igm, ''), {
+									jsx: true,
+									linenos: true,
+									theme: require('cardinal/themes/tomorrow-night.js')
+								})
+									}\n`);
+								console.log(`warning at "${generate(e).replace(/\$\$State\.state\./igm, '')}"`)
 								console.log(`in wather function only read state variabel that you watch\n\n`)
 							}
 						});
 
-						find(e,{type: 'AssignmentExpression'}).forEach(e=>{
-							if(e.left.name.match(/\$\$State\.state\./igm) && e.left.name.replace('$$State.state.','') in watchState){
-								console.log(`\n\nFatal : \n "cannot assign or update variabel that has been watched" \nError at : \n${
-								highlight(generate(node).replace(generate(e),'$& //<-- at this').replace(/\$\$State\.state\./igm,''),{
-								 	jsx: true,
-								 	linenos: true,
-								 	theme: require('cardinal/themes/tomorrow-night.js')
-								 })
-								}\n`);
-								console.log(`warning at "${generate(e).replace(/\$\$State\.state\./igm,'')}"`)
+						find(e, { type: 'AssignmentExpression' }).forEach(e => {
+							if (e.left.name.match(/\$\$State\.state\./igm) && e.left.name.replace('$$State.state.', '') in watchState) {
+								console.log(`\n\nFatal : \n "cannot assign or update variabel that has been watched" \nError at : \n${highlight(generate(node).replace(generate(e), '$& //<-- at this').replace(/\$\$State\.state\./igm, ''), {
+									jsx: true,
+									linenos: true,
+									theme: require('cardinal/themes/tomorrow-night.js')
+								})
+									}\n`);
+								console.log(`warning at "${generate(e).replace(/\$\$State\.state\./igm, '')}"`)
 								console.log(`in wather function only read state variabel that you watch\n\n`)
 							}
 						});
@@ -1338,40 +1328,40 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 		}
 	});
 
-	replace(tree,(node) => {
+	replace(tree, (node) => {
 
-		if(node.type === 'ImportDeclaration'){
-		    const SelekuCore = [ 
-		    "ArrayWatcher", 
-		    "Observer", 
-		    "CreateCustomState",
-		    "Seleku",
-		    "CreateState"];
-		    if(node.source.value === 'seleku-v3.0/seleku-core'){
-		      for(let x of SelekuCore){
-		        node.specifiers.push(
-		          {
-		            type: 'ImportSpecifier',
-		            local: { type: 'Identifier', name: x },
-		            imported: { type: 'Identifier', name: x }
-		          }
-		        )
-		      }
-		    }
-		  }
+		if (node.type === 'ImportDeclaration') {
+			const SelekuCore = [
+				"ArrayWatcher",
+				"Observer",
+				"CreateCustomState",
+				"Seleku",
+				"CreateState"];
+			if (node.source.value === 'seleku-v3.0/seleku-core') {
+				for (let x of SelekuCore) {
+					node.specifiers.push(
+						{
+							type: 'ImportSpecifier',
+							local: { type: 'Identifier', name: x },
+							imported: { type: 'Identifier', name: x }
+						}
+					)
+				}
+			}
+		}
 
-		if(node.type === 'VariableDeclaration'){
-			if(node.declarations[0]?.init?.type === 'ArrowFunctionExpression' && 
-			   node.declarations[0].id.type === 'Identifier' && 
-			   node.declarations[0].id.name in componentFunctionName){
-				
+		if (node.type === 'VariableDeclaration') {
+			if (node.declarations[0]?.init?.type === 'ArrowFunctionExpression' &&
+				node.declarations[0].id.type === 'Identifier' &&
+				node.declarations[0].id.name in componentFunctionName) {
+
 				node.declarations[0]?.init?.params.push(
 					{ type: 'Identifier', name: '$$_parent' }
 				);
 
 			}
 
-			if(node.declarations[0]?.init?.type === 'ArrowFunctionExpression' && node.declarations[0].id.name in componentFunctionName){
+			if (node.declarations[0]?.init?.type === 'ArrowFunctionExpression' && node.declarations[0].id.name in componentFunctionName) {
 				node.declarations[0].init.body.body.unshift(ASTParse(`let _Observer = new Observer();const _State = class extends CreateState {
   constructor(args) {
     super(args);
@@ -1384,15 +1374,15 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
 		}
 
-		if(node.type === 'FunctionDeclaration'){
+		if (node.type === 'FunctionDeclaration') {
 
-			if(node.id.name in componentFunctionName){
+			if (node.id.name in componentFunctionName) {
 				node.params.push(
 					{ type: 'Identifier', name: '$$_parent' }
 				);
 			}
 
-			if(node.id.name in componentFunctionName){
+			if (node.id.name in componentFunctionName) {
 				node.body.body.unshift(ASTParse(`let _Observer = new Observer();const _State = class extends CreateState {
   constructor(args) {
     super(args);
@@ -1410,12 +1400,12 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 	});
 
 	// Seleku API access AST
-	if(API.AST) API.AST(tree);
+	if (API.AST) API.AST(tree);
 
 	return {
 		JS: generate(binaryExpressionReduction(tree))
-		.replace(/\$\$State\.state\.\$\$State\.state./igm,'$$$State.state.')
-		.replace(/\$\$\_SELEKU_PREPROCESS_\$\$\./igm,''),
+			.replace(/\$\$State\.state\.\$\$State\.state./igm, '$$$State.state.')
+			.replace(/\$\$\_SELEKU_PREPROCESS_\$\$\./igm, ''),
 		CSS: StyleSheet.join(' ')
 	}
 }

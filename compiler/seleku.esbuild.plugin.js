@@ -5,7 +5,6 @@ const {
   updateRegisterHTMLElement,
   bind,
   ref,
-  dynamicAttr,
   condition,
   registerContentState,
   copase,
@@ -13,30 +12,33 @@ const {
 } = require('./compiler-core.js');
 
 
-module.exports = (Copase = {css: null,set: false})=> ({
+module.exports = ()=> ({
+  
   name: 'seleku',
   setup(build) {
+
+    // adding resolver to resolve seleku file path
     build.onResolve({ filter: /\.selek$/ }, args => {
       return { path: path.join(args.resolveDir, args.path) }
     });
 
+    // custom options for build
     const options = build.initialOptions
     options.define = options.define || {}
     options.define['process.env.NODE_ENV'] =
       options.minify ? '"production"' : '"development"';
 
+    // adding banner to seleku
+    // this is by deafult
     options.banner = {
   	    js: `/**\n* Seleku Create and maintenance By Ari Susanto \n* check my github at \n* @link https://github.com/daberpro \n\n*/`,
   	}
 
-    build.onStart(()=>{
-      console.log('compiling...');
-    });
-
     build.onLoad({ filter: /\.selek$/ }, (args) => {
-      console.time();
+      console.log('compiling : '+args.path);
       let source = readFileSync(args.path, 'utf8');
-      const contents = transform(source,({
+      
+      let contents = transform(source,({
         node,
         from
       })=>{
@@ -49,14 +51,13 @@ module.exports = (Copase = {css: null,set: false})=> ({
         /*
           this method create to access component when compile
         */
-        getComponent(component,stateIdentifier,StyleSheet){
+        getComponent(component,stateIdentifier /*,StyleSheet*/ ){
           HTMLError(component);
           bind(component,stateIdentifier);
           ref(component,stateIdentifier);
-          dynamicAttr(component,stateIdentifier);
           condition(component,stateIdentifier);
           registerContentState(component,stateIdentifier);
-          if(Copase.set) copase(component,stateIdentifier,StyleSheet);
+          // if(Copase.set) copase(component,stateIdentifier,StyleSheet);
         },
         /*
           this method create to access AST from component tree
@@ -66,17 +67,11 @@ module.exports = (Copase = {css: null,set: false})=> ({
         AST(tree){
 
         }
-      });
+    });
 
-      console.log(args.path);
-      Copase.css = contents.CSS;
       return {
         contents: contents.JS
       }
-    })
-
-    build.onEnd(()=>{
-      console.log('compiling success');
     })
 
   },
