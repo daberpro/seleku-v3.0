@@ -163,12 +163,12 @@ const BundleHTML = async (customConfig = {}, additional = {})=>{
 }
 
 
-Bundle({
-  entryPoints: ['index.html'],
-  minify: false,
-  metafile: true,
-  outbase: 'src',
-  splitting: false,
-});
+// Bundle({
+//   entryPoints: ['index.html'],
+//   minify: false,
+//   metafile: true,
+//   outbase: 'src',
+//   splitting: false,
+// });
 
 module.exports.Bundle = Bundle;
