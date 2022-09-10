@@ -5,7 +5,7 @@ module.exports = (component,stateIdentifier)=>{
 
 		if(e.attr?.hasOwnProperty('ref')){
 
-			e.component += `${e.attr['ref']} = ${e.componentName}`;
+			e.component += `$$State.state.${e.attr['ref']} = ${e.componentName}`;
 			stateIdentifier[e.attr['ref']] = null;
 
 		}

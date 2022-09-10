@@ -5,5 +5,9 @@ test.js
 *.css
 result
 *txt
+kit
 app.test.js
 compiler\/seleku-core
+kit\/node_modules
+kit\/package.json
+kit\/package-lock.json

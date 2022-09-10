@@ -12,7 +12,7 @@ const {
 } = require('./compiler-core.js');
 
 
-module.exports = ()=> ({
+module.exports = (cache, target)=> ({
   
   name: 'seleku',
   setup(build) {
@@ -35,40 +35,127 @@ module.exports = ()=> ({
   	}
 
     build.onLoad({ filter: /\.selek$/ }, (args) => {
+      
+      if(cache && target){
+        if(!cache.has(args.path)){
+            console.log('compiling : '+args.path);
+            let source = readFileSync(args.path, 'utf8');
+            let contents = transform(source,({
+                node,
+                from
+              })=>{
+
+                // some access to seleku component
+                
+              },
+              null,
+              {
+                /*
+                  this method create to access component when compile
+                */
+                getComponent(component,stateIdentifier /*,StyleSheet*/ ){
+                  HTMLError(component);
+                  bind(component,stateIdentifier);
+                  ref(component,stateIdentifier);
+                  condition(component,stateIdentifier);
+                  registerContentState(component,stateIdentifier);
+                  // if(Copase.set) copase(component,stateIdentifier,StyleSheet);
+                },
+                /*
+                  this method create to access AST from component tree
+                  and for parsing and manipulate AST i have been using 
+                  abstract-syntax-tree module
+                */
+                AST(tree){
+
+                }
+            });
+
+            cache.set(args.path,contents.JS);
+            return {
+              contents: contents.JS
+            }
+
+        }else if(args.path.toLowerCase() === target.toLowerCase()){
+            console.log('compiling : '+args.path);
+            let source = readFileSync(args.path, 'utf8');
+            let contents = transform(source,({
+                node,
+                from
+              })=>{
+
+                // some access to seleku component
+                
+              },
+              null,
+              {
+                /*
+                  this method create to access component when compile
+                */
+                getComponent(component,stateIdentifier /*,StyleSheet*/ ){
+                  HTMLError(component);
+                  bind(component,stateIdentifier);
+                  ref(component,stateIdentifier);
+                  condition(component,stateIdentifier);
+                  registerContentState(component,stateIdentifier);
+                  // if(Copase.set) copase(component,stateIdentifier,StyleSheet);
+                },
+                /*
+                  this method create to access AST from component tree
+                  and for parsing and manipulate AST i have been using 
+                  abstract-syntax-tree module
+                */
+                AST(tree){
+
+                }
+            });
+
+            cache.set(args.path,contents.JS);
+            return {
+              contents: contents.JS
+            }
+
+        }else{
+            
+            return {
+              contents: cache.get(args.path)
+            }          
+        }
+      }
+
       console.log('compiling : '+args.path);
       let source = readFileSync(args.path, 'utf8');
       
       let contents = transform(source,({
-        node,
-        from
-      })=>{
+          node,
+          from
+        })=>{
 
-        // some access to seleku component
-        
-      },
-      null,
-      {
-        /*
-          this method create to access component when compile
-        */
-        getComponent(component,stateIdentifier /*,StyleSheet*/ ){
-          HTMLError(component);
-          bind(component,stateIdentifier);
-          ref(component,stateIdentifier);
-          condition(component,stateIdentifier);
-          registerContentState(component,stateIdentifier);
-          // if(Copase.set) copase(component,stateIdentifier,StyleSheet);
+          // some access to seleku component
+          
         },
-        /*
-          this method create to access AST from component tree
-          and for parsing and manipulate AST i have been using 
-          abstract-syntax-tree module
-        */
-        AST(tree){
+        null,
+        {
+          /*
+            this method create to access component when compile
+          */
+          getComponent(component,stateIdentifier /*,StyleSheet*/ ){
+            HTMLError(component);
+            bind(component,stateIdentifier);
+            ref(component,stateIdentifier);
+            condition(component,stateIdentifier);
+            registerContentState(component,stateIdentifier);
+            // if(Copase.set) copase(component,stateIdentifier,StyleSheet);
+          },
+          /*
+            this method create to access AST from component tree
+            and for parsing and manipulate AST i have been using 
+            abstract-syntax-tree module
+          */
+          AST(tree){
 
-        }
-    });
-
+          }
+      });
       return {
         contents: contents.JS
       }

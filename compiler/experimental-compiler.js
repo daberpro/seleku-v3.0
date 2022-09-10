@@ -201,47 +201,53 @@ function createHTML(Component, arrayResult, src, isFirstChild = false, address, 
             const ${TagName}_content = Seleku.createContent(
                 ${TagName},
                 "${Component.childNodes.map(e => {
-            if (e.nodeName === "#text") {
-                return e.value
-            }
-             }).join(" ").replace(/\s+/igm, ' ')}",
+                        if (e.nodeName === "#text") {
+                            return e.value
+                        }
+                    }).join(" ").replace(/\s+/igm, ' ')}",
                 {
                     ${Component.childNodes.map(e => {
-            if (e.nodeName === "#text") {
-                return e.value
-            }
-            }).join(" ").match(/\$\{.*?\}/igm)?.map((e) => {
+                        if (e.nodeName === "#text") {
+                            return e.value
+                        }
+                        }).join(" ").match(/\$\{.*?\}/igm)?.map((e) => {
 
-            if (/\./igm.test(e)) {
+                            if (/\./igm.test(e)) {
 
-                return e.split('.')[0];
+                                return e.split('.')[0];
 
-            } else {
+                            } else {
 
-                let isThereLiteral = false;
-                let isThereIdentifier = false;
-                let allIdentifier = [];
+                                let isThereLiteral = false;
+                                let isThereIdentifier = false;
+                                let allIdentifier = [];
 
-                find(ASTParse(e.replace(/(\{|\}|\$)/igm, "")), { type: 'Literal' }).forEach(e => {
-                    isThereLiteral = true;
-                });
+                                find(ASTParse(e.replace(/(\{|\}|\$)/igm, "")), { type: 'Literal' }).forEach(e => {
+                                    isThereLiteral = true;
+                                });
 
-                find(ASTParse(e.replace(/(\{|\}|\$)/igm, "")), { type: 'Identifier' }).forEach(e => {
-                    allIdentifier.push(e.name);
-                    isThereIdentifier = true;
-                });
+                                find(ASTParse(e.replace(/(\{|\}|\$)/igm, "")), { type: 'Identifier' }).forEach(e => {
+                                    allIdentifier.push(e.name);
+                                    isThereIdentifier = true;
+                                });
 
-                if (isThereLiteral && isThereIdentifier) {
-                    return `${TagName}_${uuidv4()}: ${e},${allIdentifier}`;
-                } else if (isThereLiteral) {
-                    return `${TagName}_${uuidv4()}: ${e}`;
-                } else {
-                    return e;
-                }
+                                if (isThereLiteral && isThereIdentifier) {
+                                    return `${TagName}_${uuidv4()}: ${e},${allIdentifier}`;
+                                } else if (isThereLiteral) {
+                                    return `${TagName}_${uuidv4()}: ${e}`;
+                                } else if (isThereIdentifier) {
+                                    // console.log(allIdentifier)
+                                    return allIdentifier
+                                            .map(d =>{
+                                                return `${d}`
+                                            }).join(',');
+                                }else {
+                                    return e;
+                                }
 
-            }
+                            }
 
-        })?.join(",\n").replace(/(\{|\}|\$)/igm, "") || ''}
+                        })?.join(",\n").replace(/(\{|\}|\$)/igm, "") || ''}
                 }
             );
             ${attr.hasOwnProperty("condition") ? `
@@ -438,8 +444,8 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
                             ${nameOfChildContent.filter(_e => _e).map(__e => {
                     if (/\_component$/igm.test(__e)) {
                         return `${__e}.update(undefined,{${(calledComponent[__e]) ? Object.keys(calledComponent[__e]).map(d => {
-                            return `${d}: props['${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}']`
-                        }).join(', ') + ',...props'
+                            return `${d}: props['${e.rootAttr.loop.split(" ")[2].replace(/(\n|\r|\t|\"|\'|\`)/igm, "")}'],`
+                        }).join(' ') + '...props'
                             :
                             '...props'
                             }});`;
@@ -620,30 +626,38 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
     const SELEKU_COMPONENT_NAME = {};
 
     walk(tree,(e)=>{
-        if(e.type === 'VariableDeclaration'){
-            if(e.type === 'ExportNamedDeclaration'){
-                if (e.declaration.type === 'VariableDeclaration') {
-                    const variable = e.declaration.declarations[0];
-        
-                    if (variable.init.type === 'ArrowFunctionExpression') {
-                        SELEKU_COMPONENT_NAME[variable.id.name] = {
-                            body: variable,
-                            declarations: {},
-                            mainElement: [],
-                            verify: find(e, { type: 'MemberExpression' }).find(e => e.object.name === 'Seleku'),
-                        }
+        if(e.type === 'ExportNamedDeclaration'){
+            if (e.declaration.type === 'VariableDeclaration') {
+                const variable = e.declaration.declarations[0];
+    
+                if (variable.init.type === 'ArrowFunctionExpression') {
+                    SELEKU_COMPONENT_NAME[variable.id.name] = {
+                        body: variable,
+                        declarations: {},
+                        mainElement: [],
+                        verify: find(e, { type: 'MemberExpression' }).find(e => e.object.name === 'Seleku'),
                     }
-        
-                    if (variable.init.type === 'FunctionExpression') {
-                        SELEKU_COMPONENT_NAME[variable.id.name] = {
-                            body: variable,
-                            declarations: {},
-                            mainElement: [],
-                            verify: find(e, { type: 'MemberExpression' }).find(e => e.object.name === 'Seleku')
-                        }
+                }
+    
+                if (variable.init.type === 'FunctionExpression') {
+                    SELEKU_COMPONENT_NAME[variable.id.name] = {
+                        body: variable,
+                        declarations: {},
+                        mainElement: [],
+                        verify: find(e, { type: 'MemberExpression' }).find(e => e.object.name === 'Seleku')
                     }
                 }
             }
+            if (e.declaration.type === 'FunctionDeclaration') {
+                SELEKU_COMPONENT_NAME[e.declaration.id.name] = {
+                    body: e,
+                    declarations: {},
+                    mainElement: [],
+                    verify: find(e, { type: 'MemberExpression' }).find(e => e.object.name === 'Seleku')
+                }
+            }
+        }
+        if(e.type === 'VariableDeclaration'){
             /**
              * create and verify the function component has seleku
              * component inside there
@@ -795,6 +809,7 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
                                         set(object,target,value){
                                             object[target] = value;
                                             _Observer.emit('${d.declarations[0].id.name}',{'${d.declarations[0].id.name}': object});
+                                            return value;
                                         }
                                     });
                                     $$State.state.${d.declarations[0].id.name} = ${d.declarations[0].id.name};
@@ -857,12 +872,115 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
              * add parents parameter for rendering child
              * in condition component
              */
-            if(!e.declarations[0]?.init?.params?.length){
-                e.declarations[0]?.init?.params.push(
+            if(e.declarations[0]?.init?.params instanceof Array && !e.declarations[0]?.init?.params?.length){
+                if('push' in e.declarations[0]?.init?.params) e.declarations[0]?.init?.params.push(
                     { type: 'Identifier', name: 'props' }
                 );
             }
-            e.declarations[0]?.init?.params.push(
+            if(e.declarations[0]?.init?.params instanceof Array && 'push' in e.declarations[0]?.init?.params) e.declarations[0]?.init?.params.push(
+                { type: 'Identifier', name: '$$_parent' }
+            );
+
+        }
+    });
+
+    const exportComponentBody = find(tree, {
+        type: 'ExportNamedDeclaration'
+    }).filter(e =>{
+        if(e.declaration.type === 'FunctionDeclaration'){
+            return e.declaration.id.name in SELEKU_COMPONENT_NAME;
+        }
+    });
+    exportComponentBody.forEach((e, ei) => {
+        const name = e.declaration.id.name;
+        if (name in SELEKU_COMPONENT_NAME) {
+
+            /**
+             * add the variabel to State
+             */
+
+            const stateHasChange = [];
+
+            walk(e,(d)=>{
+                if (d.type === 'VariableDeclaration') {
+                    if (d.declarations[0].id.name in SELEKU_COMPONENT_NAME[name].declarations) {
+                        if(!stateHasChange.find(g => g === d)){
+                            
+                            if(d.declarations[0].init.type === 'ObjectExpression'){
+                                d['customState'] = ASTParse(`
+                                    ${d.kind} ${d.declarations[0].id.name} = reactiveObject(${generate(d.declarations[0].init)},{
+                                        set(object,target,value){
+                                            object[target] = value;
+                                            _Observer.emit('${d.declarations[0].id.name}',{'${d.declarations[0].id.name}': object});
+                                            return value;
+                                        }
+                                    });
+                                    $$State.state.${d.declarations[0].id.name} = ${d.declarations[0].id.name};
+                                `);
+                            }else{
+                                d['customState'] = ASTParse(`
+                                    ${d.kind} ${d.declarations[0].id.name} = ${generate(d.declarations[0].init)};
+                                    $$State.state.${d.declarations[0].id.name} = ${d.declarations[0].id.name};
+                                `);
+                            }
+                        }
+                    }
+                }
+            });
+
+            replace(e,d =>{
+                if(d.hasOwnProperty('customState')){
+                    return d['customState'];
+                }
+            })
+
+            /**
+             * adding State and Observer to the function
+             * component
+             */
+
+            e.declaration.body?.body.unshift(
+                ASTParse(`
+                let _Observer = new Observer();
+                const _State = class extends CreateState {
+                    constructor(args) {
+                      super(args);
+                    }
+                    update(prop) {
+                      _Observer.emit(prop, this.object);
+                    }
+                  };
+                  let $$State = new _State({});
+                `)
+            );
+
+            e.declaration.body?.body.unshift(
+                ASTParse(`const loopSpace_ = {}`)
+            );
+
+            /**
+             * add return statement to return the main element
+             */
+
+            e.declaration.body?.body.push({
+                type: 'ReturnStatement',
+                argument: ASTParse(`({element: ${SELEKU_COMPONENT_NAME[name].mainElement[0]},update($$SELEKU_content,$$SELEKU_data,$$SELEKU_state,$$SELEKU_value){
+                                ${SELEKU_COMPONENT_NAME[name].mainElement.map(d => {
+                    if (/\_attribute/igm.test(d)) return `${d}.update($$SELEKU_data);`
+                    if (/\_content/igm.test(d)) return `${d}.update($$SELEKU_content,$$SELEKU_data);`
+                }).join(' ') + '$$State.state[$$SELEKU_state]=$$SELEKU_value;'}}})`)
+            });
+
+            /**
+             * add parents parameter for rendering child
+             * in condition component
+             */
+            if(!e.declaration?.params?.length){
+                e.declaration?.params.push(
+                    { type: 'Identifier', name: 'props' }
+                );
+            }
+            e.declaration?.params.push(
                 { type: 'Identifier', name: '$$_parent' }
             );
 
@@ -1104,8 +1222,13 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
 
     tree.body.forEach((e, i) => {
 
-        if(e.type === 'ExportNamedDeclaration' && e.declaration.declarations[0].id.name in SELEKU_COMPONENT_NAME){
-            setState(e.declaration, e.declaration.declarations[0].id.name);
+        if(e.type === 'ExportNamedDeclaration'){
+            if('declarations' in e.declaration &&  e.declaration.declarations[0].id.name in SELEKU_COMPONENT_NAME){
+                setState(e.declaration, e.declaration.declarations[0].id.name);
+            }
+            else if(e.declaration.id.name in SELEKU_COMPONENT_NAME){
+                setState(e.declaration, e.declaration.id.name);
+            }
         }
         if (e.type === 'VariableDeclaration' && e.declarations[0].id.name in SELEKU_COMPONENT_NAME) {
             setState(e, e.declarations[0].id.name);
@@ -1151,16 +1274,18 @@ module.exports.transform = function (_source, callbackComponentArrowFunction, is
     // Seleku API access AST
     if (API.AST) API.AST(tree);
 
-    return {
-        JS: generate(binaryExpressionReduction(tree))
+    const JS = generate(binaryExpressionReduction(tree))
             .replace(/\$\$\_SELEKU\_COMPONENT\_LOOP\_\$\$/igm, 'x')
             .replace(/\$\$\_SELEKU\_COMPONENT\_LOOP\_DATA\_\$\$\_/igm, '')
             .replace(/\_SELEKU\_DYNAMIC\_\d*/igm, '')
             .replace(/\$\_SELEKU\_LOOP\_OBJECT\_\$\_/igm, '')
             .replace(/\$\_SELEKU\_IGNORE\_STATE\_\$\_/igm, '')
             .replace(/\$\$State\.state\.\$\_SELEKU\_IGNORE\_STATE\_\$\_/igm, '')
-            .replace(/\$\$State\.state\.\$\$State\.state\./igm, '$$$State.state.'),
-        CSS: StyleSheet.join(' ')
+            .replace(/\$\$State\.state\.\$\$State\.state\./igm, '$$$State.state.');
+
+    return {
+        JS,
+        CSS: StyleSheet.join(' '),
     }
 }
 
